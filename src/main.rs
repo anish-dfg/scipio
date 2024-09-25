@@ -1,4 +1,4 @@
-//! The main entry point for the Pantheon application.
+//! Scipio is the core backend service for Develop for Good's Pantheon platform.
 //!
 //! Pantheon is a unified platform for managing Develop for Good. It is responsible for
 //! streamlining the onboarding and offboarding process for new volunteers each cycle, providing
@@ -11,7 +11,7 @@
 //! (most of which are customized for and provide useful interfaces for Develop for Good's specific
 //! needs).
 //!
-//! The services that Pantheon requires to run include:
+//! The services that Scipio requires to run include:
 //! - An authentication provider (currently Auth0, although anything which implements
 //!   `Authenticator` will work).
 //! - A database (currently PostgreSQL, although anything which implements `StorageLayer` will work).
@@ -31,7 +31,7 @@
 //!
 
 // ╭───────────────────────────────────────────────────────────────────────────────────────────────────╮
-// │                                             Pantheon                                              │
+// │                                             Scipio                                                │
 // ╰───────────────────────────────────────────────────────────────────────────────────────────────────╯
 //  @author Anish Sinha <anish@developforgood.org>
 //  ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -69,10 +69,8 @@ async fn main() -> Result<()> {
     let addr = format!("{}:{}", args.host, args.port);
 
     let client = async_nats::connect(&args.nats_url).await?;
-    println!("Connected to NATS server at {}", args.nats_url);
 
     let authenticator = Arc::new(Auth0::new(&args.auth0_tenant_uri, args.auth0_audiences).await?);
-    println!("Configured Auth0 Client");
 
     let storage_layer = Arc::new(PgBackend::new(&args.database_url).await?);
     let mail = Arc::new(SendgridEmailClient::new(&args.sendgrid_api_key, 8)?);
