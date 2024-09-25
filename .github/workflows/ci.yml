@@ -33,7 +33,7 @@ jobs:
       - name: Build image
         run: |-
           docker build -t scipio:alpha . &&
-          docker tag scipio ${{ GAR_LOCATION }}/scipio:latest
+          docker tag scipio ${{ env.GAR_LOCATION }}/scipio:latest
 
         working-directory: .
       - name: Push image
