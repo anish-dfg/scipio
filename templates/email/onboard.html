@@ -1,0 +1,26 @@
+{% extends "email/base.html" %}
+<!---->
+{% block content %}
+<h2 class="welcome">Welcome {{ name }},</h2>
+<div class=".container">
+  <p>
+    We're glad to have you at Develop for Good! To get started, you will need to
+    activate your email. Your new Develop for Good email is:
+  </p>
+
+  <strong>{{ email }}</strong>, and your temporary password is:
+  <strong>{{ temporaryPassword }}</strong>.
+
+  <br />
+  <p>
+    Once you log in, you will be prompted to change your password. Please do so
+    as soon as you can so that you can access Slack, Notion, Figma, and other
+    internal services for this project batch.
+  </p>
+
+  <p>
+    If you have any questions, please don't hesitate to reach out to your
+    product lead or the Develop for Good management team.
+  </p>
+</div>
+{% endblock content %}

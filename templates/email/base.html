@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to Develop for Good</title>
+    <style>
+      #logo {
+        width: 125px;
+      }
+    </style>
+  </head>
+  <body>
+    {% include "email/header.html" %}
+    <main>
+      {% block content %}
+      <p>Default content</p>
+      {% endblock content %}
+    </main>
+    {% include "email/footer.html" %}
+  </body>
+</html>

@@ -1,0 +1,44 @@
+services:
+  postgres:
+    hostname: postgres
+    container_name: pantheon-postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_INITDB_ARGS: "-A md5"
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pantheon-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: anish@developforgood.org
+      PGADMIN_DEFAULT_PASSWORD: anish
+    ports:
+      - "8889:80"
+    hostname: pgadmin
+    depends_on:
+      - postgres
+  redis:
+    hostname: redis
+    container_name: pantheon-redis
+    image: redis
+    ports:
+      - "6379:6379"
+  redis-insight:
+    hostname: redis-ui
+    container_name: pantheon-redis-ui
+    image: redislabs/redisinsight
+    ports:
+      - "8001:5540"
+    depends_on:
+      - redis
+  nats:
+    container_name: pantheon-nats
+    image: "nats:2.10.19"
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    hostname: nats-server

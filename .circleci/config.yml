@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  build-push-artifact:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: arm.medium
+    environment:
+      PROJECT_ID: develop-for-good
+      REGION: us-central1
+      GAR_LOCATION: us-central1-docker.pkg.dev/develop-for-good/dfg
+    steps:
+      - checkout
+
+      - run:
+          name: Install Google Cloud SDK
+          command: |
+            echo "Installing Google Cloud SDK"
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+            sudo apt-get update && sudo apt-get install -y google-cloud-cli
+
+      - run:
+          name: Authenticate with Google Cloud
+          command: echo ${SERVICE_ACCOUNT_KEY} > $HOME/gcloud-key.json && gcloud auth activate-service-account --key-file=$HOME/gcloud-key.json
+
+      - run:
+          name: Set up Docker authentication
+          command: |
+            echo "Configuring Docker to use gcloud as a credential helper"
+            gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+
+      - run:
+          name: Build Docker image
+          command: |
+            echo "Building Docker image"
+            docker build -t scipio .
+            docker tag scipio ${GAR_LOCATION}/scipio:latest
+
+      - run:
+          name: Push Docker image
+          command: |
+            echo "Pushing Docker image"
+            docker push ${GAR_LOCATION}/scipio:latest
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-push-artifact:
+          filters:
+            branches:
+              only:
+                - main
