@@ -1906,16 +1906,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
-name = "pantheon-macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "trybuild",
-]
-
-[[package]]
 name = "parking"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2698,13 +2688,13 @@ dependencies = [
  "mobc",
  "mobc-redis",
  "mockall",
- "pantheon-macros",
  "rand",
  "regex",
  "reqwest",
  "reqwest-middleware",
  "reqwest-retry",
  "rstest",
+ "scipio-macros",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -2719,6 +2709,16 @@ dependencies = [
  "utoipa",
  "utoipa-rapidoc",
  "uuid",
+]
+
+[[package]]
+name = "scipio-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "trybuild",
 ]
 
 [[package]]

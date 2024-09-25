@@ -1,4 +1,4 @@
-use pantheon_macros::ToQueryString;
+use scipio_macros::ToQueryString;
 
 struct S {
     pub field: String,
@@ -32,14 +32,8 @@ pub fn main() {
         e: Some(vec!["e".to_owned(), "E".to_owned()]),
         f: None,
         g: Some(vec![
-            S {
-                field: "g1".to_owned(),
-                direction: "asc".to_owned(),
-            },
-            S {
-                field: "g2".to_owned(),
-                direction: "desc".to_owned(),
-            },
+            S { field: "g1".to_owned(), direction: "asc".to_owned() },
+            S { field: "g2".to_owned(), direction: "desc".to_owned() },
         ]),
         h: vec![true, false, true],
     };

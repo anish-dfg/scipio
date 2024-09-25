@@ -5,7 +5,7 @@ use std::fmt::Display;
 use anyhow::Result;
 use async_trait::async_trait;
 use derive_builder::Builder;
-use pantheon_macros::ToQueryString;
+use scipio_macros::ToQueryString;
 use serde::Serialize;
 use serde_json::Value;
 
