@@ -1906,52 +1906,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
-name = "pantheon-app"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-nats",
- "async-trait",
- "axum",
- "axum-extra",
- "axum-macros",
- "chrono",
- "clap",
- "csv",
- "derive_builder",
- "derive_more",
- "dotenvy",
- "futures",
- "jsonwebtoken",
- "lazy_static",
- "log",
- "mobc",
- "mobc-redis",
- "mockall",
- "pantheon-macros",
- "rand",
- "regex",
- "reqwest",
- "reqwest-middleware",
- "reqwest-retry",
- "rstest",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "serde_with",
- "sqlx",
- "tera",
- "thiserror",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "utoipa",
- "utoipa-rapidoc",
- "uuid",
-]
-
-[[package]]
 name = "pantheon-macros"
 version = "0.1.0"
 dependencies = [
@@ -2719,6 +2673,52 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbc91545643bcf3a0bbb6569265615222618bdf33ce4ffbbd13c4bbd4c093534"
 dependencies = [
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "scipio"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-nats",
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "axum-macros",
+ "chrono",
+ "clap",
+ "csv",
+ "derive_builder",
+ "derive_more",
+ "dotenvy",
+ "futures",
+ "jsonwebtoken",
+ "lazy_static",
+ "log",
+ "mobc",
+ "mobc-redis",
+ "mockall",
+ "pantheon-macros",
+ "rand",
+ "regex",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-retry",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "serde_with",
+ "sqlx",
+ "tera",
+ "thiserror",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "utoipa",
+ "utoipa-rapidoc",
+ "uuid",
 ]
 
 [[package]]

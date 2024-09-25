@@ -1,6 +1,6 @@
 workspace = { members = ["pantheon-macros"] }
 [package]
-name = "pantheon-app"
+name = "scipio"
 version = "0.1.0"
 edition = "2021"
 

@@ -12,10 +12,10 @@ FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --target aarch64-unknown-linux-musl --recipe-path recipe.json
 COPY . .
-RUN cargo build --release --target aarch64-unknown-linux-musl --bin pantheon-app
+RUN cargo build --release --target aarch64-unknown-linux-musl --bin scipio
 
 FROM scratch AS runtime
-COPY --from=builder /app/target/aarch64-unknown-linux-musl/release/pantheon-app /usr/local/bin/
-CMD ["/usr/local/bin/pantheon-app"]
+COPY --from=builder /app/target/aarch64-unknown-linux-musl/release/scipio /usr/local/bin/
+CMD ["/usr/local/bin/scipio"]
 
 
