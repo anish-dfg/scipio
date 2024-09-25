@@ -1,3 +1,5 @@
+# NOTE: This workflow is currently disabled because GitHub Actions is faster by a factor of two
+
 version: 2.1
 
 jobs:

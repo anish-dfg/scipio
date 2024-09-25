@@ -31,7 +31,10 @@ jobs:
         run: |-
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
       - name: Build image
-        run: docker build . --file Dockerfile --tag scipio:alpha
+        run: |-
+          docker build -t scipio:alpha . &&
+          docker tag scipio ${{ GAR_LOCATION }}/scipio:latest
+
         working-directory: .
       - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}
+        run: docker push ${{ env.GAR_LOCATION }}/scipio:latest
