@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: develop-for-good
   REGION: us-central1
-  GAR_LOCATION: us-central1-docker.pkg.dev/develop-for-good/dfg/
+  GAR_LOCATION: us-central1-docker.pkg.dev/develop-for-good/dfg
 
 jobs:
   build-push-artifact:
