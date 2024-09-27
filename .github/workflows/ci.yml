@@ -27,14 +27,20 @@ jobs:
 
       - name: "Use gcloud CLI"
         run: "gcloud info"
+
       - name: "Docker auth"
         run: |-
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Set short commit SHA
+        id: set_commit_sha
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build image
         run: |-
           docker build -t scipio . &&
-          docker tag scipio ${{ env.GAR_LOCATION }}/scipio:latest
-
+          docker tag scipio ${{ env.GAR_LOCATION }}/scipio:${{ env.SHORT_SHA }}
         working-directory: .
+
       - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}/scipio:latest
+        run: docker push ${{ env.GAR_LOCATION }}/scipio:${{ env.SHORT_SHA }}
