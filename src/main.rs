@@ -61,6 +61,10 @@ async fn main() -> Result<()> {
 
     let services = args.init_services().await?;
 
+    services.storage_layer.migrate().await?;
+
+    log::info!("successfully ran database migrations");
+
     log::info!("{}", services.get_info());
 
     let srv = app::build(services).await;

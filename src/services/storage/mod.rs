@@ -171,8 +171,11 @@ impl Service for PgBackend {
 }
 
 pub trait StorageService<DB: Database = Postgres>:
-    StorageLayer<DB> + Service + Send + Sync
+    StorageLayer<DB> + Service + Migrator + Send + Sync
 {
 }
 
-impl<T, DB: Database> StorageService<DB> for T where T: StorageLayer<DB> + Service + Send + Sync {}
+impl<T, DB: Database> StorageService<DB> for T where
+    T: StorageLayer<DB> + Migrator + Service + Send + Sync
+{
+}
