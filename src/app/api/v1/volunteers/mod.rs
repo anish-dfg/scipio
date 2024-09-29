@@ -5,7 +5,7 @@ use axum::{routing, Router};
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 mod controllers;
 mod responses;
@@ -19,7 +19,7 @@ mod responses;
 )]
 pub struct VolunteersApi;
 
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec!["read:volunteers".to_owned()]).await;
 
     let fetch_volunteers_by_cycle = routing::get(controllers::fetch_volunteers_by_cycle);

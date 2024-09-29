@@ -16,6 +16,7 @@ use reqwest_retry::{
     default_on_request_failure, RetryTransientMiddleware, Retryable, RetryableStrategy,
 };
 
+use super::Service;
 use crate::services::airtable::base_data::bases::AirtableBasesClient;
 use crate::services::airtable::base_data::records::AirtableRecordsClient;
 
@@ -75,9 +76,19 @@ impl DfgAirtableClient {
     }
 }
 
+impl Service for DfgAirtableClient {
+    fn get_id(&self) -> &'static str {
+        "dfg-airtable-client [default]"
+    }
+}
+
 /// A trait for interacting with the Airtable API.
 pub trait AirtableClient: AirtableBasesClient + AirtableRecordsClient + Send + Sync {}
 
 // Implement the AirtableClient trait for any type that implements the AirtableBasesClient and
 // AirtableRecordsClient traits.
 impl<T> AirtableClient for T where T: AirtableBasesClient + AirtableRecordsClient + Send + Sync {}
+
+pub trait AirtableService: AirtableClient + Service + Send + Sync {}
+
+impl<T> AirtableService for T where T: AirtableClient + Service + Send + Sync {}

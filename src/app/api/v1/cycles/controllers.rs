@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 use crate::app::api::v1::cycles::responses::CyclesResponse;
 use crate::app::api_response;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::storage::ExecOptsBuilder;
 
 /// Fetch cycles
@@ -30,7 +30,7 @@ use crate::services::storage::ExecOptsBuilder;
         ("Authorization" = String, Header, description = "JWT. NOTE: Prefix with Bearer")
     ),
 )]
-pub async fn fetch_cycles(State(ctx): State<Arc<Context>>) -> Result<Response, AppError> {
+pub async fn fetch_cycles(State(ctx): State<Arc<Services>>) -> Result<Response, AppError> {
     let storage_layer = &ctx.storage_layer;
     let cycles = storage_layer.fetch_cycles(&mut ExecOptsBuilder::default().build()?).await?;
     let res = CyclesResponse { cycles };
@@ -56,7 +56,7 @@ pub async fn fetch_cycles(State(ctx): State<Arc<Context>>) -> Result<Response, A
     ),
 )]
 pub async fn delete_cycle(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(id): Path<Uuid>,
 ) -> Result<Response, AppError> {
     let storage_layer = &ctx.storage_layer;

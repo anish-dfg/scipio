@@ -8,8 +8,8 @@ use axum::response::Response;
 use axum::Extension;
 
 use crate::app::api_response;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::auth::AuthData;
 
 /// Fetch user info from the token.
@@ -31,7 +31,7 @@ use crate::services::auth::AuthData;
     ),
 )]
 pub async fn user(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Extension(auth): Extension<AuthData>,
 ) -> Result<Response, AppError> {
     let authenticator = &ctx.authenticator;

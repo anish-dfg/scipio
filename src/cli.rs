@@ -1,8 +1,45 @@
 //! This module defines the command line interface to Pantheon.
 
-use clap::Parser;
+use std::sync::Arc;
 
-#[derive(Parser, Debug)]
+use anyhow::{bail, Result};
+use clap::{Parser, ValueEnum};
+use serde::Serialize;
+
+use crate::app::state::{Services, ServicesBuilder};
+use crate::services::airtable::{AirtableService, DfgAirtableClient};
+use crate::services::auth::auth0::Auth0;
+use crate::services::auth::noop::NoopAuthenticator;
+use crate::services::auth::AuthenticatorService;
+use crate::services::mail::noop::NoopEmailClient;
+use crate::services::mail::sendgrid::SendgridEmailClient;
+use crate::services::mail::MailService;
+use crate::services::storage::{PgBackend, StorageService};
+use crate::services::workspace::noop::NoopWorkspaceClient;
+use crate::services::workspace::service_account::ServiceAccountWorkspaceClient;
+use crate::services::workspace::WorkspaceService;
+
+#[derive(ValueEnum, Serialize, Debug, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub enum AuthServiceImpl {
+    Noop,
+    Auth0,
+}
+
+#[derive(ValueEnum, Serialize, Debug, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub enum MailServiceImpl {
+    Noop,
+    Sendgrid,
+}
+
+#[derive(ValueEnum, Serialize, Debug, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub enum WorkspaceServiceImpl {
+    Noop,
+    ServiceAccount,
+}
+
 /// Command line arguments for Pantheon
 ///
 /// * `host`: The host to bind the server to
@@ -33,28 +70,25 @@ use clap::Parser;
 /// * `airtable_api_token`: The Airtable API token
 /// * `database_url`: The URL of the database to connect to
 ///
-///    Currently, the only database impolentation is
-///    Postgres, but this could, in theory, be swapped out for another database implementation,
-///    though that would require a lot of work for no gain.
-///
-/// * `cache_url`: The URL of the cache to connect to
-///
-///    Currently, this parameter is ignored because we haven't
-///    actually implemented a caching backend.
-///
 /// * `sendgrid_api_key`: The Sendgrid API key
 ///
 /// * `nats_url`: The URL of the NATS server to connect to
+#[derive(Parser, Debug)]
 pub struct Args {
-    #[arg(long, env)]
+    #[arg(long, env, default_value = "http://localhost")]
     pub host: String,
-    #[arg(long, env)]
+    #[arg(long, env, default_value = "8888")]
     pub port: String,
 
+    #[arg(long, env, value_enum, default_value_t = AuthServiceImpl::Auth0)]
+    pub auth_service: AuthServiceImpl,
     #[arg(long, env)]
-    pub auth0_tenant_uri: String,
+    pub auth0_tenant_uri: Option<String>,
     #[arg(long, env, value_delimiter = ',')]
-    pub auth0_audiences: Vec<String>,
+    pub auth0_audiences: Option<Vec<String>>,
+
+    #[arg(long, env, value_enum, default_value_t = WorkspaceServiceImpl::Noop)]
+    pub workspace_service: WorkspaceServiceImpl,
 
     #[arg(long, env)]
     pub workspace_client_email: String,
@@ -64,6 +98,8 @@ pub struct Args {
     pub workspace_private_key: String,
     #[arg(long, env, default_value = "https://oauth2.googleapis.com/token")]
     pub workspace_token_url: String,
+    #[arg(long, env)]
+    pub workspace_service_account: String,
 
     #[arg(long, env)]
     pub airtable_api_token: String,
@@ -71,12 +107,81 @@ pub struct Args {
     #[arg(long, env, default_value = "postgresql://postgres:postgres@localhost:5432/postgres")]
     pub database_url: String,
 
-    #[arg(long, env, default_value = "redis://redis@localhost")]
-    pub cache_url: String,
-
+    #[arg(long, env, value_enum, default_value_t = MailServiceImpl::Sendgrid)]
+    pub mail_service: MailServiceImpl,
     #[arg(long, env)]
-    pub sendgrid_api_key: String,
+    pub sendgrid_api_key: Option<String>,
 
-    #[arg(long, env)]
+    #[arg(long, env, default_value = "nats://localhost:4222")]
     pub nats_url: String,
+}
+
+impl Args {
+    async fn init_auth_service(&self) -> Result<Arc<dyn AuthenticatorService>> {
+        let service: Arc<dyn AuthenticatorService> = match self.auth_service {
+            AuthServiceImpl::Noop => Arc::new(NoopAuthenticator),
+            AuthServiceImpl::Auth0 => {
+                match (self.auth0_tenant_uri.as_ref(), self.auth0_audiences.as_ref()) {
+                    (Some(tenant_uri), Some(audiences)) => {
+                        Arc::new(Auth0::new(tenant_uri, audiences.clone()).await?)
+                    }
+                    _ => bail!(
+                        "Auth0 tenant URI and audiences must be provided if auth service is auth0"
+                    ),
+                }
+            }
+        };
+        Ok(service)
+    }
+
+    fn init_mail_service(&self) -> Result<Arc<dyn MailService>> {
+        let service: Arc<dyn MailService> = match self.mail_service {
+            MailServiceImpl::Noop => Arc::new(NoopEmailClient),
+            MailServiceImpl::Sendgrid => match self.sendgrid_api_key.as_ref() {
+                Some(api_key) => Arc::new(SendgridEmailClient::new(api_key, 3)?),
+                _ => bail!("Sendgrid API key must be provided if mail service is sendgrid"),
+            },
+        };
+        Ok(service)
+    }
+
+    fn init_workspace_service(&self) -> Result<Arc<dyn WorkspaceService>> {
+        let service: Arc<dyn WorkspaceService> = match self.workspace_service {
+            WorkspaceServiceImpl::Noop => Arc::new(NoopWorkspaceClient),
+            WorkspaceServiceImpl::ServiceAccount => Arc::new(ServiceAccountWorkspaceClient::new(
+                &self.workspace_client_email,
+                &self.workspace_private_key_id,
+                &self.workspace_private_key,
+                &self.workspace_token_url,
+                8,
+            )),
+        };
+
+        Ok(service)
+    }
+
+    fn init_airtable_service(&self) -> Result<Arc<dyn AirtableService>> {
+        Ok(Arc::new(DfgAirtableClient::default_with_token(&self.airtable_api_token)?))
+    }
+
+    async fn init_storage_service(&self) -> Result<Arc<dyn StorageService>> {
+        Ok(Arc::new(PgBackend::new(&self.database_url).await?))
+    }
+
+    async fn init_nats_client(&self) -> Result<async_nats::Client> {
+        Ok(async_nats::connect(&self.nats_url).await?)
+    }
+
+    pub async fn init_services(&self) -> Result<Arc<Services>> {
+        Ok(Arc::new(
+            ServicesBuilder::default()
+                .authenticator(self.init_auth_service().await?)
+                .storage_layer(self.init_storage_service().await?)
+                .airtable(self.init_airtable_service()?)
+                .workspace(self.init_workspace_service()?)
+                .nats(self.init_nats_client().await?)
+                .mail(self.init_mail_service()?)
+                .build()?,
+        ))
+    }
 }

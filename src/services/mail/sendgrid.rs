@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use tera::Context;
 
 use crate::services::mail::{DefaultRetryStrategy, EmailClient, OnboardingEmailParams, TEMPLATES};
+use crate::services::Service;
 
 /// A client for sending emails using Sendgrid.
 ///
@@ -205,5 +206,11 @@ impl EmailClient for SendgridEmailClient {
             .await?;
 
         Ok(())
+    }
+}
+
+impl Service for SendgridEmailClient {
+    fn get_id(&self) -> &'static str {
+        "sendgrid [default]"
     }
 }

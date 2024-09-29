@@ -9,6 +9,8 @@ use async_trait::async_trait;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
 
+use super::Service;
+
 /// User data returned by the authenticator.
 ///
 // TODO: Ensure noop at least includes the required fields for testing purposes.
@@ -62,3 +64,7 @@ pub trait Authenticator: Send + Sync {
         unimplemented!()
     }
 }
+
+pub trait AuthenticatorService: Authenticator + Service + Send + Sync {}
+
+impl<T> AuthenticatorService for T where T: Authenticator + Service + Sync + Sync {}

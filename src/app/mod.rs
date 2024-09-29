@@ -1,8 +1,8 @@
 mod api;
 mod api_docs;
 mod api_response;
-pub mod context;
 mod errors;
+pub mod state;
 use std::sync::Arc;
 
 use api_docs::ApiDocs;
@@ -12,19 +12,17 @@ use tower_http::trace::TraceLayer;
 use utoipa::OpenApi;
 use utoipa_rapidoc::RapiDoc;
 
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 /// Build the application router.
 ///
 /// * `ctx`: The application context
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
-    let api = api::build(ctx.clone()).await;
-
-    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+pub async fn build(services: Arc<Services>) -> Router<()> {
+    let api = api::build(services.clone()).await;
 
     Router::new()
         .merge(RapiDoc::with_openapi("/api-docs/openapi.json", ApiDocs::openapi()).path("/rapidoc"))
-        .with_state(ctx)
+        .with_state(services)
         .nest("/api", api)
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())

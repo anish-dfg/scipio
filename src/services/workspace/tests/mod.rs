@@ -14,6 +14,10 @@ use crate::services::workspace::WorkspaceClient;
 #[fixture]
 pub fn service_account_workspace_client() -> ServiceAccountWorkspaceClient {
     dotenvy::dotenv().expect("error loading environment variables");
+
+    // let service_account_json =
+    //     env::var("WORKSPACE_SERVICE_ACCOUNT").expect("missing WORKSPACE_SERVICE_ACCOUNT variable");
+
     let private_key_id =
         env::var("WORKSPACE_PRIVATE_KEY_ID").expect("missing WORKSPACE_PRIVATE_KEY_ID variable");
     let private_key =
@@ -28,6 +32,14 @@ pub fn service_account_workspace_client() -> ServiceAccountWorkspaceClient {
         "https://oauth2.googleapis.com/token",
         5,
     )
+
+    // let processed = service_account_json.replace("\n", "\\n");
+    // println!("{}", processed);
+    //
+    // let x = serde_json::from_str::<ServiceAccount>(&service_account_json.replace("\n", "\\n"))
+    //     .expect("error parsing service account json");
+    // println!("{:?}", x);
+    // ServiceAccountWorkspaceClient::new_from_service_account_json(x, 5)
 }
 
 #[rstest]

@@ -12,7 +12,7 @@ use axum::{routing, Router};
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 /// Documents the API for data exports
 #[derive(OpenApi)]
@@ -27,7 +27,7 @@ pub struct DataExportsApi;
 /// Builds the data exports API.
 ///
 /// * `ctx`: The application context
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec![]).await;
 
     let export_users_to_workspace = routing::post(controllers::export_users_to_workspace);

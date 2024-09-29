@@ -147,6 +147,8 @@ macro_rules! exec_with_tx {
 
 pub(in crate::services::storage) use exec_with_tx;
 
+use super::Service;
+
 // Auto-impl StorageLayer for any type that implements the required traits
 impl<T, DB: Database> StorageLayer<DB> for T where
     T: QueryVolunteers<DB>
@@ -161,3 +163,16 @@ impl<T, DB: Database> StorageLayer<DB> for T where
         + Sync
 {
 }
+
+impl Service for PgBackend {
+    fn get_id(&self) -> &'static str {
+        "pg-backend [default]"
+    }
+}
+
+pub trait StorageService<DB: Database = Postgres>:
+    StorageLayer<DB> + Service + Send + Sync
+{
+}
+
+impl<T, DB: Database> StorageService<DB> for T where T: StorageLayer<DB> + Service + Send + Sync {}

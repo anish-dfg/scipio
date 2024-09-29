@@ -7,8 +7,8 @@ use axum::Json;
 use uuid::Uuid;
 
 use crate::app::api::v1::jobs::responses::{Job, JobsResponse};
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::storage::types::JobDetails;
 use crate::services::storage::ExecOptsBuilder;
 
@@ -25,7 +25,7 @@ use crate::services::storage::ExecOptsBuilder;
         ("Authorization" = String, Header, description = "JWT. NOTE: Prefix with Bearer")
     ),
 )]
-pub async fn fetch_jobs(State(ctx): State<Arc<Context>>) -> Result<Json<JobsResponse>, AppError> {
+pub async fn fetch_jobs(State(ctx): State<Arc<Services>>) -> Result<Json<JobsResponse>, AppError> {
     let storage_layer = &ctx.storage_layer;
     let jobs: Vec<Job> = storage_layer
         .fetch_jobs(&mut ExecOptsBuilder::default().build()?)
@@ -63,7 +63,7 @@ pub async fn fetch_jobs(State(ctx): State<Arc<Context>>) -> Result<Json<JobsResp
     ),
 )]
 pub async fn cancel_job(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(job_id): Path<Uuid>,
 ) -> Result<Response, AppError> {
     let nats = &ctx.nats;

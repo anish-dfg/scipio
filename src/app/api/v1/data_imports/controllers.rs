@@ -12,8 +12,8 @@ use super::{import_airtable_base_task, ImportAirtableBaseTaskParams};
 use crate::app::api::v1::data_imports::requests::ImportAirtableBase;
 use crate::app::api::v1::data_imports::responses::AvailableBases;
 use crate::app::api_response;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::airtable::base_data::bases::responses::V1SchemaValidator;
 use crate::services::storage::jobs::CreateJobBuilder;
 use crate::services::storage::types::{JobData, JobDetails, JobType};
@@ -29,7 +29,7 @@ use crate::services::storage::ExecOptsBuilder;
     )
 )]
 pub async fn list_available_airtable_bases(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
 ) -> Result<Response, AppError> {
     let airtable = &ctx.airtable;
 
@@ -53,7 +53,7 @@ pub async fn list_available_airtable_bases(
     )
 ]
 pub async fn import_airtable_base(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(base_id): Path<String>,
     Json(payload): Json<ImportAirtableBase>,
 ) -> Result<Response, AppError> {

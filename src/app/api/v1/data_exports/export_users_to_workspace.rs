@@ -17,16 +17,16 @@ use tokio::{task, time};
 use uuid::Uuid;
 
 use crate::app::api::v1::data_exports::requests::ExportUsersToWorkspaceRequest;
-use crate::services::mail::{EmailClient, OnboardingEmailParamsBuilder};
+use crate::services::mail::{MailService, OnboardingEmailParamsBuilder};
 use crate::services::storage::entities::VolunteerDetails;
 use crate::services::storage::jobs::{CreateJobBuilder, UpdateJobStatus};
 use crate::services::storage::types::{JobData, JobDetails, JobStatus, JobType};
 use crate::services::storage::volunteers::InsertVolunteerExportedToWorkspace;
-use crate::services::storage::{ExecOpts, ExecOptsBuilder, StorageLayer};
+use crate::services::storage::{ExecOpts, ExecOptsBuilder, StorageService};
 use crate::services::workspace::entities::{
     CreateWorkspaceUser, CreateWorkspaceUserBuilder, NameBuilder,
 };
-use crate::services::workspace::WorkspaceClient;
+use crate::services::workspace::WorkspaceService;
 
 pub struct ExportUsersToWorkspaceTaskParams {
     pub principal: String,
@@ -189,9 +189,9 @@ fn process_volunteers(
 /// At its core, this function creates users in Google Workspace and sends them an onboarding
 /// email. If this was successful, it will mark the users as exported in the pantheon database.
 async fn export_users_to_workspace(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
-    mail: Arc<dyn EmailClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
+    mail: Arc<dyn MailService>,
     principal: &str,
     result: ProcessVolunteersResult,
     successfully_exported_users: &mut Vec<(Uuid, String)>,
@@ -266,8 +266,8 @@ async fn export_users_to_workspace(
 /// Workspace, they will not be removed from the pantheon database either, and an error will be
 /// logged.
 async fn undo_partial_export(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     principal: &str,
     successfully_exported_users: Vec<(Uuid, String)>,
 ) -> Result<Vec<(Uuid, String)>> {
@@ -327,8 +327,8 @@ struct UndoExportTaskParams {
 /// * `undo_job_id`: The ID of the job that is undoing the export
 /// * `params`: The parameters for the undo task
 async fn post_cancellation_undo_partial_export_task(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     undo_job_id: Uuid,
     params: UndoExportTaskParams,
 ) -> Result<()> {
@@ -369,8 +369,8 @@ async fn post_cancellation_undo_partial_export_task(
 /// * `workspace`: Handle to the workspace client
 /// * `params`: The parameters for the post-cancellation task
 async fn handle_post_cancellation_undo_export(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     params: UndoExportTaskParams,
 ) -> Result<()> {
     // Create a job to undo the partial export
@@ -438,8 +438,8 @@ struct HandlePostCancellationParams {
 /// * `params`: The parameters for the post-cancellation handler
 /// * `successfully_exported_users`: The users that were successfully exported
 async fn handle_post_cancellation(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     params: HandlePostCancellationParams,
     successfully_exported_users: Vec<(Uuid, String)>,
 ) -> Result<()> {
@@ -477,8 +477,8 @@ struct HandlePostExportParams {
 /// * `undo_job_id`: The ID of the job that is undoing the export
 /// * `successfully_exported_users`: The users that were successfully exported
 async fn post_export_undo_task(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     principal: &str,
     undo_job_id: Uuid,
     successfully_exported_users: Vec<(Uuid, String)>,
@@ -521,8 +521,8 @@ async fn post_export_undo_task(
 /// * `workspace`: Handle to the workspace client
 /// * `params`: Parameters for the post-export handler
 async fn handle_post_export(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
     params: HandlePostExportParams,
 ) -> Result<()> {
     // [F2-2]: Based on the export result, update the job status
@@ -591,9 +591,9 @@ async fn handle_post_export(
 /// * `mail`: Handle to the mail client
 /// * `params`: Parameters for the export task
 pub async fn export_task(
-    storage_layer: Arc<dyn StorageLayer>,
-    workspace: Arc<dyn WorkspaceClient>,
-    mail: Arc<dyn EmailClient>,
+    storage_layer: Arc<dyn StorageService>,
+    workspace: Arc<dyn WorkspaceService>,
+    mail: Arc<dyn MailService>,
     mut params: ExportUsersToWorkspaceTaskParams,
 ) -> Result<()> {
     let process_result = process_volunteers(&params, params.request.volunteers.clone())?;

@@ -7,7 +7,7 @@ use axum::{routing, Router};
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 mod controllers;
 mod responses;
@@ -26,7 +26,7 @@ pub struct CyclesApi;
 /// Builds the cycles API.
 ///
 /// * `ctx`: The application context
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec!["read:cycles".to_owned()]).await;
     let guard2 = make_rbac(vec!["delete:cycles".to_owned()]).await;
 

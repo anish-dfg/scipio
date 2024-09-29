@@ -36,11 +36,11 @@ jobs:
         id: set_commit_sha
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Build image
-        run: |-
-          docker build -t scipio . &&
-          docker tag scipio ${{ env.GAR_LOCATION }}/scipio:${{ env.SHORT_SHA }}
-        working-directory: .
-
-      - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}/scipio:${{ env.SHORT_SHA }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.GAR_LOCATION }}/scipio:latest,${{ env.GAR_LOCATION }}/scipio:${{ env.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

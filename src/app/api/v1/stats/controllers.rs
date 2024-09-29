@@ -4,8 +4,8 @@ use axum::extract::{Path, State};
 use axum::Json;
 use uuid::Uuid;
 
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::storage::entities::BasicStats;
 use crate::services::storage::ExecOptsBuilder;
 
@@ -23,7 +23,7 @@ use crate::services::storage::ExecOptsBuilder;
     ),
 )]
 pub async fn fetch_basic_stats(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(project_cycle_id): Path<Uuid>,
 ) -> Result<Json<BasicStats>, AppError> {
     let storage_layer = &ctx.storage_layer;
