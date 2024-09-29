@@ -40,22 +40,11 @@ mod app;
 mod cli;
 mod services;
 
-use std::sync::Arc;
-
 use anyhow::Result;
 use clap::Parser;
 use tokio::net::TcpListener;
 
-use crate::app::context::ContextBuilder;
 use crate::cli::Args;
-use crate::services::airtable::DfgAirtableClient;
-use crate::services::auth::auth0::Auth0;
-use crate::services::mail::sendgrid::SendgridEmailClient;
-use crate::services::storage::{Migrator, PgBackend};
-#[allow(unused_imports)]
-use crate::services::workspace::noop::NoopWorkspaceClient;
-#[allow(unused_imports)]
-use crate::services::workspace::service_account::ServiceAccountWorkspaceClient;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -64,40 +53,21 @@ async fn main() -> Result<()> {
         Err(_) => println!("no .env file found"),
     };
 
+    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init();
+
     let args = Args::parse();
 
     let addr = format!("{}:{}", args.host, args.port);
 
-    let client = async_nats::connect(&args.nats_url).await?;
+    let services = args.init_services().await?;
 
-    let authenticator = Arc::new(Auth0::new(&args.auth0_tenant_uri, args.auth0_audiences).await?);
+    log::info!("{}", services.get_info());
 
-    let storage_layer = Arc::new(PgBackend::new(&args.database_url).await?);
-    let mail = Arc::new(SendgridEmailClient::new(&args.sendgrid_api_key, 8)?);
-    let airtable = Arc::new(DfgAirtableClient::default_with_token(&args.airtable_api_token)?);
-    let workspace = Arc::new(ServiceAccountWorkspaceClient::new(
-        &args.workspace_client_email,
-        &args.workspace_private_key_id,
-        &args.workspace_private_key,
-        &args.workspace_token_url,
-        8,
-    ));
-    // let workspace = Arc::new(NoopWorkspaceClient);
+    let srv = app::build(services).await;
 
-    storage_layer.migrate().await?;
+    let listener = TcpListener::bind(&addr).await?;
 
-    let ctx = ContextBuilder::default()
-        .authenticator(authenticator)
-        .storage_layer(storage_layer)
-        .airtable(airtable)
-        .workspace(workspace)
-        .nats(client)
-        .mail(mail)
-        .build()?;
-
-    let srv = app::build(Arc::new(ctx)).await;
-
-    let listener = TcpListener::bind(addr).await?;
+    log::info!("started scipio server on {}", addr);
 
     axum::serve(listener, srv).await?;
 

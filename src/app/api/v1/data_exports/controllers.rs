@@ -16,8 +16,8 @@ use crate::app::api::v1::data_exports::export_users_to_workspace::{
 use crate::app::api::v1::data_exports::requests::ExportUsersToWorkspaceRequest;
 use crate::app::api::v1::data_exports::responses::ExportUsersToWorkspaceResponse;
 use crate::app::api_response;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::auth::AuthData;
 use crate::services::storage::jobs::CreateJobBuilder;
 use crate::services::storage::types::{ExportDesination, JobData, JobDetails, JobType};
@@ -47,7 +47,7 @@ use crate::services::storage::ExecOptsBuilder;
     ),
 )]
 pub async fn export_users_to_workspace(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(project_cycle_id): Path<Uuid>,
     Extension(auth): Extension<AuthData>,
     Json(request): Json<ExportUsersToWorkspaceRequest>,

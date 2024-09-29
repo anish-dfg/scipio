@@ -20,7 +20,7 @@ use stats::StatsApi;
 use utoipa::OpenApi;
 use volunteers::VolunteersApi;
 
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 /// API Documentation for version 1 of the Pantheon API.
 #[derive(OpenApi)]
@@ -40,14 +40,14 @@ pub struct V1Api;
 /// Builds the API for version 1 of the Pantheon API.
 ///
 /// * `ctx`: The application context
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
-    let data_import_routes = data_imports::build(ctx.clone()).await;
-    let data_export_routes = data_exports::build(ctx.clone()).await;
-    let authz_routes = authz::build(ctx.clone()).await;
-    let cycles_routes = cycles::build(ctx.clone()).await;
-    let jobs_routes = jobs::build(ctx.clone()).await;
-    let volunteers_routes = volunteers::build(ctx.clone()).await;
-    let stats_routes = stats::build(ctx.clone()).await;
+pub async fn build(services: Arc<Services>) -> Router<()> {
+    let data_import_routes = data_imports::build(services.clone()).await;
+    let data_export_routes = data_exports::build(services.clone()).await;
+    let authz_routes = authz::build(services.clone()).await;
+    let cycles_routes = cycles::build(services.clone()).await;
+    let jobs_routes = jobs::build(services.clone()).await;
+    let volunteers_routes = volunteers::build(services.clone()).await;
+    let stats_routes = stats::build(services.clone()).await;
 
     Router::new()
         .nest("/data-imports", data_import_routes)

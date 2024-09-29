@@ -5,8 +5,8 @@ use axum::Json;
 use uuid::Uuid;
 
 use crate::app::api::v1::volunteers::responses::Volunteers;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::storage::ExecOptsBuilder;
 
 #[utoipa::path(
@@ -23,7 +23,7 @@ use crate::services::storage::ExecOptsBuilder;
     ),
 )]
 pub async fn fetch_volunteers_by_cycle(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     Path(project_cycle_id): Path<Uuid>,
 ) -> Result<Json<Volunteers>, AppError> {
     let storage_layer = &ctx.storage_layer;

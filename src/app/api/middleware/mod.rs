@@ -15,8 +15,8 @@ use axum_extra::headers::Authorization;
 use axum_extra::TypedHeader;
 
 use crate::app::api_response;
-use crate::app::context::Context;
 use crate::app::errors::AppError;
+use crate::app::state::Services;
 use crate::services::auth::AuthData;
 
 /// Middleware for role-based access control (RBAC).
@@ -26,7 +26,7 @@ use crate::services::auth::AuthData;
 /// * `next`: The next middleware in the chain
 /// * `permissions`: The permissions required to access the route (such as `["read:volunteers"]`)
 pub async fn rbac(
-    State(ctx): State<Arc<Context>>,
+    State(ctx): State<Arc<Services>>,
     header: TypedHeader<Authorization<Bearer>>,
     mut request: Request,
     next: Next,
@@ -56,7 +56,7 @@ pub async fn rbac(
 pub async fn make_rbac(
     permissions: Vec<String>,
 ) -> impl Fn(
-    State<Arc<Context>>,
+    State<Arc<Services>>,
     TypedHeader<Authorization<Bearer>>,
     Request,
     Next,

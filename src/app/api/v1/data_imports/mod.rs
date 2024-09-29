@@ -14,7 +14,7 @@ use requests::ImportAirtableBase;
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -23,7 +23,7 @@ use crate::app::context::Context;
 )]
 pub struct DataImportsApi;
 
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec!["read:available-bases".to_owned()]).await;
 
     let import_airtable_base = routing::post(controllers::import_airtable_base);

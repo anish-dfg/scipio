@@ -1,5 +1,6 @@
 //! This module contains traits for sending emails, as well as one concrete implementation (SendGrid).
 
+pub mod noop;
 pub mod sendgrid;
 #[cfg(test)]
 mod tests;
@@ -11,6 +12,8 @@ use lazy_static::lazy_static;
 use reqwest::{Response, StatusCode};
 use reqwest_retry::{default_on_request_failure, Retryable, RetryableStrategy};
 use tera::Tera;
+
+use super::Service;
 
 lazy_static! {
     /// The Tera instance for rendering email templates.
@@ -80,3 +83,7 @@ pub trait EmailClient: Send + Sync {
     /// * `params`: Data needed to send the onboarding email
     async fn send_onboarding_email(&self, params: OnboardingEmailParams) -> Result<()>;
 }
+
+pub trait MailService: EmailClient + Service + Send + Sync {}
+
+impl<T> MailService for T where T: EmailClient + Service + Send + Sync {}

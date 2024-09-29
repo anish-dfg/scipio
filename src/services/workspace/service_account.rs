@@ -13,6 +13,22 @@ use serde::{Deserialize, Serialize};
 
 use crate::services::workspace::entities::CreateWorkspaceUser;
 use crate::services::workspace::{DefaultRetryStrategy, WorkspaceClient};
+use crate::services::Service;
+
+// #[derive(Debug, Deserialize)]
+// pub struct ServiceAccount {
+//     #[serde(rename = "type")]
+//     _type: String,
+//     project_id: String,
+//     private_key_id: String,
+//     private_key: String,
+//     client_email: String,
+//     client_id: String,
+//     auth_uri: String,
+//     auth_provider_x509_cert_url: String,
+//     client_x509_cert_url: String,
+//     universe_domain: String,
+// }
 
 /// [RFC 7523 Bearer Token Grant Type](https://datatracker.ietf.org/doc/html/rfc7523#section-8.1)
 const BEARER_TOKEN_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:jwt-bearer";
@@ -115,6 +131,27 @@ impl ServiceAccountWorkspaceClient {
         }
     }
 
+    // pub fn new_from_service_account_json(
+    //     service_account: ServiceAccount,
+    //     max_retries: u64,
+    // ) -> Self {
+    //     let retry_policy = ExponentialBackoff::builder().build_with_max_retries(max_retries as u32);
+    //     let retry_strategy = RetryTransientMiddleware::new_with_policy_and_strategy(
+    //         retry_policy,
+    //         DefaultRetryStrategy,
+    //     );
+    //
+    //     let http = ClientBuilder::new(Client::new()).with(retry_strategy).build();
+    //
+    //     Self {
+    //         client_email: service_account.client_email,
+    //         private_key_id: service_account.private_key_id,
+    //         private_key: service_account.private_key,
+    //         token_uri: service_account.auth_provider_x509_cert_url,
+    //         http,
+    //     }
+    // }
+
     /// Request an assertion token from the Google Workspace API on the behalf of a principal.
     ///
     /// * `principal`: The email of the authenticated user requesting this action.
@@ -190,5 +227,11 @@ impl WorkspaceClient for ServiceAccountWorkspaceClient {
             .await?;
 
         Ok(())
+    }
+}
+
+impl Service for ServiceAccountWorkspaceClient {
+    fn get_id(&self) -> &'static str {
+        "service account workspace client [default]"
     }
 }

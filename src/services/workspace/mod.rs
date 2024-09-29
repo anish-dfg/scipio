@@ -13,6 +13,7 @@ use async_trait::async_trait;
 use reqwest::{Response, StatusCode};
 use reqwest_retry::{default_on_request_failure, Retryable, RetryableStrategy};
 
+use super::Service;
 use crate::services::workspace::entities::CreateWorkspaceUser;
 
 struct DefaultRetryStrategy;
@@ -73,3 +74,6 @@ pub trait WorkspaceClient: Send + Sync {
         unimplemented!()
     }
 }
+
+pub trait WorkspaceService: WorkspaceClient + Service + Send + Sync {}
+impl<T> WorkspaceService for T where T: WorkspaceClient + Service + Send + Sync {}

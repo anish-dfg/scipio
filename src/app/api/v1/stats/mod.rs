@@ -8,7 +8,7 @@ use axum::{routing, Router};
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -19,7 +19,7 @@ use crate::app::context::Context;
 )]
 pub struct StatsApi;
 
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec![]).await;
 
     let fetch_basic_stats = routing::get(controllers::fetch_basic_stats);

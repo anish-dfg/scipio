@@ -11,6 +11,7 @@ use serde_json::Value;
 
 use super::Authenticator;
 use crate::services::auth::{AuthData, UserData};
+use crate::services::Service;
 
 /// Configuration for the Auth0 authenticator.
 ///
@@ -207,5 +208,11 @@ impl Authenticator for Auth0 {
         let userinfo = res.json::<UserInfo>().await?;
 
         Ok(UserData::Auth0(userinfo))
+    }
+}
+
+impl Service for Auth0 {
+    fn get_id(&self) -> &'static str {
+        "auth0 [default]"
     }
 }

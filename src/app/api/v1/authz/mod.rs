@@ -7,7 +7,7 @@ use axum::{routing, Router};
 use utoipa::OpenApi;
 
 use crate::app::api::middleware::make_rbac;
-use crate::app::context::Context;
+use crate::app::state::Services;
 
 mod controllers;
 
@@ -25,7 +25,7 @@ pub struct AuthzApi;
 /// Builds the authorization service API.
 ///
 /// * `ctx`: The application context
-pub async fn build(ctx: Arc<Context>) -> Router<()> {
+pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let basic_guard = make_rbac(vec![]).await;
 
     let user = routing::post(controllers::user);

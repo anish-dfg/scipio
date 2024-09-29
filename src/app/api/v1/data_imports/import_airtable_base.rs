@@ -21,7 +21,7 @@ use serde_json::Value;
 use tokio::time;
 use uuid::Uuid;
 
-use crate::app::context::Context;
+use crate::app::state::Services;
 use crate::services::airtable::base_data::records::responses::ListRecordsResponse;
 use crate::services::airtable::base_data::records::ListRecordsQueryBuilder;
 use crate::services::airtable::entities::record::Record;
@@ -42,7 +42,7 @@ use crate::services::storage::ExecOptsBuilder;
 /// * `base_id`: The base to fetch from
 ///
 /// TODO: Refactor the specific view name to a more generic one (Finalized Sum24 Nonprofit Projects -> Finalized Nonprofit Projects)
-async fn fetch_nonprofits(ctx: Arc<Context>, base_id: &str) -> Result<Vec<Record<Value>>> {
+async fn fetch_nonprofits(ctx: Arc<Services>, base_id: &str) -> Result<Vec<Record<Value>>> {
     let airtable = &ctx.airtable;
 
     let mut query_opts = ListRecordsQueryBuilder::default()
@@ -190,7 +190,7 @@ fn process_raw_nonprofits(nonprofits: Vec<Record<Value>>) -> Result<Vec<CreateNo
 ///
 /// * `ctx`: Copy of app context
 /// * `base_id`: The base to fetch from
-async fn fetch_volunteers(ctx: Arc<Context>, base_id: &str) -> Result<Vec<Record<Value>>> {
+async fn fetch_volunteers(ctx: Arc<Services>, base_id: &str) -> Result<Vec<Record<Value>>> {
     let airtable = &ctx.airtable;
 
     let fields = [
@@ -351,7 +351,7 @@ fn process_raw_volunteers(volunteers: Vec<Record<Value>>) -> Result<ProcessedVol
 ///
 /// * `ctx`: Copy of the app context
 /// * `base_id`: The base to fetch from
-async fn fetch_mentors(ctx: Arc<Context>, base_id: &str) -> Result<Vec<Record<Value>>> {
+async fn fetch_mentors(ctx: Arc<Services>, base_id: &str) -> Result<Vec<Record<Value>>> {
     let airtable = &ctx.airtable;
 
     let fields = [
@@ -523,7 +523,7 @@ fn process_raw_mentors(mentors: Vec<Record<Value>>) -> Result<ProcessedMentors> 
 }
 
 async fn fetch_mentor_mentee_linkage(
-    ctx: Arc<Context>,
+    ctx: Arc<Services>,
     base_id: &str,
 ) -> Result<Vec<(String, String)>> {
     let mut query_opts = ListRecordsQueryBuilder::default()
@@ -570,7 +570,7 @@ struct ImportBaseData {
 }
 
 async fn collect_import_base_data(
-    ctx: Arc<Context>,
+    ctx: Arc<Services>,
     base_id: &str,
     name: &str,
     description: &str,
@@ -600,7 +600,7 @@ async fn collect_import_base_data(
     })
 }
 
-async fn store_base_data(ctx: Arc<Context>, data: ImportBaseData, job_id: Uuid) -> Result<()> {
+async fn store_base_data(ctx: Arc<Services>, data: ImportBaseData, job_id: Uuid) -> Result<()> {
     let storage_layer = &ctx.storage_layer;
     let mut tx = storage_layer.acquire().await?;
     let mut exec_opts = ExecOptsBuilder::default().tx(&mut tx).build()?;
@@ -721,7 +721,7 @@ struct RunTaskParams {
     pub base_id: String,
 }
 
-async fn run_task(ctx: Arc<Context>, params: RunTaskParams) -> Result<()> {
+async fn run_task(ctx: Arc<Services>, params: RunTaskParams) -> Result<()> {
     // NOTE: Uncomment the following two lines to give yourself enough time to cancel the task
     // log::info!("Sleeping for 100 seconds");
     // time::sleep(Duration::from_secs(100)).await;
@@ -760,7 +760,7 @@ impl From<ImportTaskParams> for RunTaskParams {
 ///
 /// * `ctx`:  A copy of the app context
 /// * `params`: The parameters for the import task [ImportTaskParams]
-pub async fn import_task(ctx: Arc<Context>, mut params: ImportTaskParams) -> Result<()> {
+pub async fn import_task(ctx: Arc<Services>, mut params: ImportTaskParams) -> Result<()> {
     let storage_layer = &ctx.storage_layer;
     let job_id = params.job_id;
 

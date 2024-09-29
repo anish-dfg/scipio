@@ -5,6 +5,7 @@ use axum::async_trait;
 
 use crate::services::workspace::entities::CreateWorkspaceUser;
 use crate::services::workspace::WorkspaceClient;
+use crate::services::Service;
 
 /// A no-op implementation of the `WorkspaceClient` trait.
 ///
@@ -25,5 +26,11 @@ impl WorkspaceClient for NoopWorkspaceClient {
 
     async fn delete_user(&self, _principal: &str, _email_of_user_to_delete: &str) -> Result<()> {
         Ok(())
+    }
+}
+
+impl Service for NoopWorkspaceClient {
+    fn get_id(&self) -> &'static str {
+        "noop"
     }
 }
