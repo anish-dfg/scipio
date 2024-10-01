@@ -79,7 +79,6 @@ pub enum WorkspaceServiceImpl {
 ///
 /// * `sendgrid_api_key`: The Sendgrid API key
 ///
-/// * `nats_url`: The URL of the NATS server to connect to
 #[derive(Parser, Debug)]
 pub struct Args {
     #[arg(long, env, default_value = "http://localhost")]
@@ -119,9 +118,6 @@ pub struct Args {
     pub mail_service: MailServiceImpl,
     #[arg(long, env)]
     pub sendgrid_api_key: Option<String>,
-
-    #[arg(long, env, default_value = "nats://localhost:4222")]
-    pub nats_url: String,
 }
 
 impl Args {

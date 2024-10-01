@@ -28,9 +28,7 @@ use crate::services::storage::ExecOptsBuilder;
 /// * `request`: The request data
 ///
 /// This endpoint starts a job, records it in the database, and returns immediately. The task it
-/// spawns does not block, and it can be cancelled by sending a message to the NATS server by
-/// publishing to the topic `pantheon.export.cancel.{job_id}` where `job_id` is the ID of the job in
-/// the database. Data about the job can be retrieved by using the Jobs API.
+/// spawns does not block.
 #[utoipa::path(
     post,
     path = "/{project_cycle_id}/workspace",
