@@ -70,6 +70,7 @@ pub trait WorkspaceClient: Send + Sync {
     /// header. This is a security measure and we are delegating authentication to Auth0. Never
     /// call this function with user provided input. This is one reason why we should try to find
     /// an alternative to the service account approach.
+    #[allow(unused)]
     async fn delete_user(&self, principal: &str, email_of_user_to_delete: &str) -> Result<()> {
         unimplemented!()
     }

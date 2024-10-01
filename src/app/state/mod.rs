@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use async_nats::client::Client;
 use derive_builder::Builder;
 use sqlx::{Database, Postgres};
 
@@ -17,7 +16,6 @@ pub struct Services<DB: Database = Postgres> {
     pub storage_layer: Arc<dyn StorageService<DB>>,
     pub airtable: Arc<dyn AirtableService>,
     pub workspace: Arc<dyn WorkspaceService>,
-    pub nats: Client,
     pub mail: Arc<dyn MailService>,
 }
 
@@ -30,7 +28,6 @@ impl Services {
     storage: {},
     workspace: {},
     mail: {}
-    nats: [default nats service]
 }}",
             self.authenticator.get_id(),
             self.airtable.get_id(),

@@ -109,6 +109,11 @@ impl V1SchemaValidator for SchemaResponse {
                         .contains(required_view)
                 });
 
+                let n_has_required_dynamic_view = n.views.iter().any(|v| {
+                    v.name.starts_with(&"Finalized".to_owned())
+                        && v.name.ends_with(&"Nonprofit Projects".to_owned())
+                });
+
                 let n_has_required_fields =
                     REQUIRED_NONPROFIT_TABLE_FIELDS.iter().all(|required_field| {
                         n.fields
@@ -130,6 +135,7 @@ impl V1SchemaValidator for SchemaResponse {
                     && n_has_required_fields
                     && v_has_required_views
                     && n_has_required_views
+                    && n_has_required_dynamic_view
             }
             (_, _) => false,
         }

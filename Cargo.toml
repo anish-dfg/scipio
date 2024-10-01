@@ -8,7 +8,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-async-nats = "0.36.0"
 async-trait = "0.1.81"
 axum = { version = "0.7.5", features = [
   "http2",

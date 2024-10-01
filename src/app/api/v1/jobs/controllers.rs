@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
-use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::extract::State;
 use axum::Json;
-use uuid::Uuid;
 
 use crate::app::api::v1::jobs::responses::{Job, JobsResponse};
 use crate::app::errors::AppError;
@@ -47,28 +44,4 @@ pub async fn fetch_jobs(State(ctx): State<Arc<Services>>) -> Result<Json<JobsRes
 
     let res = JobsResponse { jobs };
     Ok(Json(res))
-}
-
-#[utoipa::path(
-    post,
-    path = "/cancel/{job_id}",
-    operation_id = "Cancel job",
-    responses(
-        (status = 200, description = "Attempted to cancel job"),
-        (status = 401, description = "Unauthorized: invalid JWT"),
-        (status = 403, description = "Forbidden: insufficient permissions (requires `fetch:cycle`)"),
-    ),
-    params(
-        ("Authorization" = String, Header, description = "JWT. NOTE: Prefix with Bearer")
-    ),
-)]
-pub async fn cancel_job(
-    State(ctx): State<Arc<Services>>,
-    Path(job_id): Path<Uuid>,
-) -> Result<Response, AppError> {
-    let nats = &ctx.nats;
-    let subject = format!("pantheon.export.cancel.{job_id}");
-    nats.publish(subject, "".into()).await?;
-    log::info!("Published message to cancel job: {job_id}");
-    Ok((StatusCode::OK).into_response())
 }

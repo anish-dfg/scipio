@@ -1,4 +1,4 @@
-//! This module defines the command line interface to Pantheon.
+//! This module defines the command line interface to Scipio.
 
 use std::sync::Arc;
 
@@ -18,6 +18,13 @@ use crate::services::storage::{PgBackend, StorageService};
 use crate::services::workspace::noop::NoopWorkspaceClient;
 use crate::services::workspace::service_account::ServiceAccountWorkspaceClient;
 use crate::services::workspace::WorkspaceService;
+
+#[derive(ValueEnum, Serialize, Debug, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub enum LaunchMode {
+    Development,
+    Production,
+}
 
 #[derive(ValueEnum, Serialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
@@ -80,6 +87,9 @@ pub struct Args {
     #[arg(long, env, default_value = "8888")]
     pub port: String,
 
+    #[arg(long,env,value_enum,default_value_t=LaunchMode::Production)]
+    pub launch_mode: LaunchMode,
+
     #[arg(long, env, value_enum, default_value_t = AuthServiceImpl::Auth0)]
     pub auth_service: AuthServiceImpl,
     #[arg(long, env)]
@@ -98,8 +108,6 @@ pub struct Args {
     pub workspace_private_key: String,
     #[arg(long, env, default_value = "https://oauth2.googleapis.com/token")]
     pub workspace_token_url: String,
-    #[arg(long, env)]
-    pub workspace_service_account: String,
 
     #[arg(long, env)]
     pub airtable_api_token: String,
@@ -168,10 +176,6 @@ impl Args {
         Ok(Arc::new(PgBackend::new(&self.database_url).await?))
     }
 
-    async fn init_nats_client(&self) -> Result<async_nats::Client> {
-        Ok(async_nats::connect(&self.nats_url).await?)
-    }
-
     pub async fn init_services(&self) -> Result<Arc<Services>> {
         Ok(Arc::new(
             ServicesBuilder::default()
@@ -179,7 +183,6 @@ impl Args {
                 .storage_layer(self.init_storage_service().await?)
                 .airtable(self.init_airtable_service()?)
                 .workspace(self.init_workspace_service()?)
-                .nats(self.init_nats_client().await?)
                 .mail(self.init_mail_service()?)
                 .build()?,
         ))
