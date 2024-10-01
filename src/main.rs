@@ -24,10 +24,6 @@
 //! - An Airtable client. This is a custom service that interacts with the Airtable API. This is
 //!   unlikely to change, unless Airtable dramatically changes their API. However, this service is
 //!   also swappable as long as it implements `AirtableClient`.
-//! - A NATS client. This is used for pub/sub messaging between services. Currently, NATS is a hard
-//!   dependency and there is no underlying abstraction for this service. That's because I don't
-//!   know nearly enough about pub/sub messaging to make a good abstraction. If you do, please feel
-//!   free to do it yourself.
 //!
 
 // ╭───────────────────────────────────────────────────────────────────────────────────────────────────╮

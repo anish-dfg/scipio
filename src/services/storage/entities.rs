@@ -362,3 +362,17 @@ pub struct BasicStats {
     pub num_nonprofits: i64,
     pub num_mentors: i64,
 }
+
+#[derive(FromRow, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportedVolunteerDetails {
+    pub id: Uuid,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub volunteer_id: Uuid,
+    pub workspace_email: String,
+    pub org_unit: String,
+    pub job_id: Uuid,
+    pub project_cycle_id: Uuid,
+    pub status: JobStatus,
+}

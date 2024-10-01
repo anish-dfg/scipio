@@ -99,6 +99,19 @@ pub trait QueryJobs<DB: Database> {
         unimplemented!()
     }
 
+    async fn mark_job_complete(&self, id: Uuid, exec_opts: &mut ExecOpts<DB>) -> Result<()> {
+        unimplemented!()
+    }
+
+    async fn mark_job_errored(
+        &self,
+        id: Uuid,
+        error: String,
+        exec_opts: &mut ExecOpts<DB>,
+    ) -> Result<()> {
+        unimplemented!()
+    }
+
     /// Set the project cycle that a job is associated with.
     ///
     /// This may be useful if a job is started to import data for a project cycle. The job is
@@ -240,5 +253,38 @@ impl QueryJobs<Postgres> for PgBackend {
             Ok(())
         }
         exec_with_tx!(self, exec_opts, exec, id)
+    }
+
+    async fn mark_job_complete(&self, id: Uuid, exec_opts: &mut ExecOpts) -> Result<()> {
+        async fn exec(id: Uuid, tx: &mut Transaction<'_, Postgres>) -> Result<()> {
+            let query = include_str!("queries/jobs/update_job_status.sql");
+            sqlx::query(query)
+                .bind(id)
+                .bind(JobStatus::Complete)
+                .bind(Option::<String>::None)
+                .execute(&mut **tx)
+                .await?;
+            Ok(())
+        }
+        exec_with_tx!(self, exec_opts, exec, id)
+    }
+
+    async fn mark_job_errored(
+        &self,
+        id: Uuid,
+        error: String,
+        exec_opts: &mut ExecOpts,
+    ) -> Result<()> {
+        async fn exec(id: Uuid, error: String, tx: &mut Transaction<'_, Postgres>) -> Result<()> {
+            let query = include_str!("queries/jobs/update_job_status.sql");
+            sqlx::query(query)
+                .bind(id)
+                .bind(JobStatus::Error)
+                .bind(Some(error))
+                .execute(&mut **tx)
+                .await?;
+            Ok(())
+        }
+        exec_with_tx!(self, exec_opts, exec, id, error)
     }
 }

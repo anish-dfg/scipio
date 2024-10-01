@@ -446,10 +446,6 @@ select
   nc.org_name,
   nc.project_name,
   nc.impact_causes,
-  -- nc.agreement_and_invoice_sent,
-  -- nc.services_agreement_signature,
-  -- nc.availability_confirmed,
-  -- nc.invoice_paid,
   nc.org_website,
   nc.country_hq,
   nc.us_state_hq,
@@ -503,42 +499,21 @@ group by
   m.id,
   pc.name;
 
-create or replace function get_volunteer_id(email text, project_cycle_id uuid)
-  returns uuid
-  as $$
-  select
-    id
-  from
-    volunteers
-  where
-    email = $1
-    and project_cycle_id = $2;
-$$
-language sql;
-
-create or replace function get_client_id(org_name text, project_cycle_id uuid)
-  returns uuid
-  as $$
-  select
-    id
-  from
-    nonprofit_clients
-  where
-    org_name = $1
-    and project_cycle_id = $2;
-$$
-language sql;
-
-create or replace function get_mentor_id(email text, project_cycle_id uuid)
-  returns uuid
-  as $$
-  select
-    id
-  from
-    mentors
-  where
-    email = $1
-    and project_cycle_id = $2;
-$$
-language sql;
+create view exported_volunteer_details as
+select
+  ev.id,
+  ev.created_at,
+  ev.updated_at,
+  ev.volunteer_id,
+  ev.workspace_email,
+  ev.org_unit,
+  j.id as job_id,
+  j.project_cycle_id,
+  j.status
+from
+  volunteers_exported_to_workspace ev
+  left join jobs j on ev.job_id = j.id
+group by
+  ev.id,
+  j.id;
 

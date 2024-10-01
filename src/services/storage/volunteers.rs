@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Database, Postgres, QueryBuilder, Transaction};
 use uuid::Uuid;
 
-use super::entities::VolunteerDetails;
+use super::entities::{ExportedVolunteerDetails, VolunteerDetails};
 use super::exec_with_tx;
 use super::types::{AgeRange, Ethnicity, Fli, Gender, Lgbt, StudentStage, VolunteerHearAbout};
 use crate::services::storage::{Acquire, ExecOpts, PgBackend};
@@ -77,7 +77,7 @@ pub struct EditVolunteer {
 /// * `workspace_email`: The workspace email the volunteer has been issued
 /// * `org_unit`: Which Develop for Good Organizational Unit the volunteer has been exported to
 ///   (usually "/Programs/PantheonUsers")
-#[derive(Builder)]
+#[derive(Builder, Clone)]
 pub struct InsertVolunteerExportedToWorkspace {
     pub volunteer_id: Uuid,
     pub job_id: Uuid,
@@ -251,6 +251,14 @@ pub trait QueryVolunteers<DB: Database> {
         data: Vec<Uuid>,
         exec_opts: &mut ExecOpts<DB>,
     ) -> Result<()> {
+        unimplemented!()
+    }
+
+    async fn fetch_exported_volunteer_details_by_project_cycle(
+        &self,
+        project_cycle_id: Uuid,
+        exec_opts: &mut ExecOpts<DB>,
+    ) -> Result<Vec<ExportedVolunteerDetails>> {
         unimplemented!()
     }
 }
@@ -564,5 +572,27 @@ impl QueryVolunteers<Postgres> for PgBackend {
         }
 
         exec_with_tx!(self, exec_opts, exec, data)
+    }
+
+    async fn fetch_exported_volunteer_details_by_project_cycle(
+        &self,
+        project_cycle_id: Uuid,
+        exec_opts: &mut ExecOpts<Postgres>,
+    ) -> Result<Vec<ExportedVolunteerDetails>> {
+        async fn exec(
+            project_cycle_id: Uuid,
+            tx: &mut Transaction<'_, Postgres>,
+        ) -> Result<Vec<ExportedVolunteerDetails>> {
+            let query = include_str!(
+                "queries/volunteers/fetch_exported_volunteer_details_by_project_cycle.sql"
+            );
+            let volunteers = sqlx::query_as::<_, ExportedVolunteerDetails>(query)
+                .bind(project_cycle_id)
+                .fetch_all(&mut **tx)
+                .await?;
+            Ok(volunteers)
+        }
+
+        exec_with_tx!(self, exec_opts, exec, project_cycle_id)
     }
 }

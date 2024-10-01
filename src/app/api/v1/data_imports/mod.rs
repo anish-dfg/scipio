@@ -1,15 +1,13 @@
+mod airtable;
 mod controllers;
-mod import_airtable_base;
 mod requests;
 mod responses;
 
 use std::sync::Arc;
 
+use axum::extract::FromRef;
 use axum::middleware::from_fn_with_state;
 use axum::{routing, Router};
-use import_airtable_base::{
-    import_task as import_airtable_base_task, ImportTaskParams as ImportAirtableBaseTaskParams,
-};
 use requests::ImportAirtableBase;
 use utoipa::OpenApi;
 
@@ -22,6 +20,17 @@ use crate::app::state::Services;
     components(schemas(ImportAirtableBase))
 )]
 pub struct DataImportsApi;
+
+pub struct ImportServices {
+    pub storage_layer: Arc<dyn crate::services::storage::StorageService>,
+    pub airtable: Arc<dyn crate::services::airtable::AirtableService>,
+}
+
+impl FromRef<Arc<Services>> for ImportServices {
+    fn from_ref(ctx: &Arc<Services>) -> Self {
+        Self { storage_layer: ctx.storage_layer.clone(), airtable: ctx.airtable.clone() }
+    }
+}
 
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
     let guard1 = make_rbac(vec!["read:available-bases".to_owned()]).await;
