@@ -4,7 +4,9 @@ pub(in crate::app) mod v1;
 
 use std::sync::Arc;
 
+use axum::middleware::from_fn_with_state;
 use axum::{routing, Router};
+use middleware::make_rbac;
 use utoipa::OpenApi;
 
 use crate::app::api::v1::V1Api;
@@ -26,10 +28,13 @@ pub struct Api;
 ///
 /// * `services`: The application services
 pub async fn build(services: Arc<Services>) -> Router<()> {
+    let guard1 = make_rbac(vec![]).await;
+
     let v1_routes = v1::build(services.clone()).await;
     Router::new()
-        .route("/health", routing::get(controllers::health))
         .route("/services", routing::get(controllers::services))
+        .route_layer(from_fn_with_state(services.clone(), guard1))
+        .route("/health", routing::get(controllers::health))
         .with_state(services.clone())
         .nest("/v1", v1_routes)
 }
