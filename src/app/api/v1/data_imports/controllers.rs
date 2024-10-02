@@ -70,7 +70,7 @@ pub async fn import_airtable_base(
     }
 
     let data = CreateJobBuilder::default()
-        .label(format!("Import Airtable Base @ {time_only}"))
+        .label("Import Airtable Base")
         .description(Some(format!("Import airtable base with id {base_id} ASDF")))
         .data(JobDetails {
             job_type: JobType::AirtableImportBase,
@@ -82,7 +82,7 @@ pub async fn import_airtable_base(
     let job_id =
         storage_layer.create_job(None, data, &mut ExecOptsBuilder::default().build()?).await?;
 
-    log::info!("Started import job {job_id}");
+    log::info!("Started import job {job_id} @ {time_only}");
 
     let params = ImportParams {
         name: payload.name,

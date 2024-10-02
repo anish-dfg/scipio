@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
 
     log::info!("successfully ran database migrations");
 
-    log::info!("{}", services.get_info());
+    log::info!("{:?}", services.get_info());
 
     let srv = app::build(services).await;
 

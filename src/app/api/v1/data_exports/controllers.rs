@@ -51,7 +51,7 @@ pub async fn export_users_to_workspace(
     let time_only = current_time.format("%H:%M:%S").to_string();
 
     let data = CreateJobBuilder::default()
-        .label(format!("Export Users @ {time_only}"))
+        .label("Export Users")
         .description(Some("Export users to Google Workspace".to_owned()))
         .data(JobDetails {
             job_type: JobType::AirtableExportUsers,
@@ -66,6 +66,8 @@ pub async fn export_users_to_workspace(
         .storage_layer
         .create_job(Some(project_cycle_id), data, &mut ExecOptsBuilder::default().build()?)
         .await?;
+
+    log::info!("Started import job {job_id} @ {time_only}");
 
     let email_policy = EmailPolicy::from(&request);
     let password_policy = PasswordPolicy::from(&request);

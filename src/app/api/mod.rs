@@ -14,6 +14,7 @@ use crate::app::state::Services;
 #[openapi(
     paths(
         controllers::health,
+        controllers::services,
     ),
     nest(
         (path="/v1", api = V1Api)
@@ -27,7 +28,8 @@ pub struct Api;
 pub async fn build(services: Arc<Services>) -> Router<()> {
     let v1_routes = v1::build(services.clone()).await;
     Router::new()
+        .route("/health", routing::get(controllers::health))
+        .route("/services", routing::get(controllers::services))
         .with_state(services.clone())
         .nest("/v1", v1_routes)
-        .route("/health", routing::get(controllers::health))
 }

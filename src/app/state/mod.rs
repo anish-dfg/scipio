@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use derive_builder::Builder;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use sqlx::{Database, Postgres};
 
 use crate::services::airtable::AirtableService;
@@ -19,21 +21,36 @@ pub struct Services<DB: Database = Postgres> {
     pub mail: Arc<dyn MailService>,
 }
 
+// pub struct ServiceInfo {
+//     id: String,
+// }
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConfiguredServices<'a> {
+    pub authenticator: &'a str,
+    pub airtable: &'a str,
+    pub storage: &'a str,
+    pub workspace: &'a str,
+    pub mail: &'a str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiServiceDetails<'a> {
+    pub configured_services: ConfiguredServices<'a>,
+}
+
 impl Services {
-    pub fn get_info(&self) -> String {
-        format!(
-            "Configured Services: {{
-    authenticator: {},
-    airtable: {},
-    storage: {},
-    workspace: {},
-    mail: {}
-}}",
-            self.authenticator.get_id(),
-            self.airtable.get_id(),
-            self.storage_layer.get_id(),
-            self.workspace.get_id(),
-            self.mail.get_id(),
-        )
+    pub fn get_info(&self) -> ApiServiceDetails {
+        ApiServiceDetails {
+            configured_services: ConfiguredServices {
+                authenticator: self.authenticator.get_id(),
+                airtable: self.airtable.get_id(),
+                storage: self.storage_layer.get_id(),
+                workspace: self.workspace.get_id(),
+                mail: self.mail.get_id(),
+            },
+        }
     }
 }

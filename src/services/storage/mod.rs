@@ -166,7 +166,7 @@ impl<T, DB: Database> StorageLayer<DB> for T where
 
 impl Service for PgBackend {
     fn get_id(&self) -> &'static str {
-        "pg-backend [default]"
+        "pg-backend"
     }
 }
 

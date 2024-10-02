@@ -232,6 +232,6 @@ impl WorkspaceClient for ServiceAccountWorkspaceClient {
 
 impl Service for ServiceAccountWorkspaceClient {
     fn get_id(&self) -> &'static str {
-        "service account workspace client [default]"
+        "service-account"
     }
 }

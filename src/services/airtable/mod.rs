@@ -78,7 +78,7 @@ impl DfgAirtableClient {
 
 impl Service for DfgAirtableClient {
     fn get_id(&self) -> &'static str {
-        "dfg-airtable-client [default]"
+        "dfg-airtable-client"
     }
 }
 

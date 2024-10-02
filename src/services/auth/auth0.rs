@@ -213,6 +213,6 @@ impl Authenticator for Auth0 {
 
 impl Service for Auth0 {
     fn get_id(&self) -> &'static str {
-        "auth0 [default]"
+        "auth0"
     }
 }

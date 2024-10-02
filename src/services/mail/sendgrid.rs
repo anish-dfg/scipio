@@ -211,6 +211,6 @@ impl EmailClient for SendgridEmailClient {
 
 impl Service for SendgridEmailClient {
     fn get_id(&self) -> &'static str {
-        "sendgrid [default]"
+        "sendgrid"
     }
 }
