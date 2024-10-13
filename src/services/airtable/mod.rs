@@ -99,10 +99,48 @@ pub trait AirtableClient: Send + Sync {
     async fn get_mentor_mentee_linkages(&self, base_id: &str) -> Result<Vec<MentorMenteeLinkage>> {
         unimplemented!()
     }
+
+    async fn validate_schema(&self, base_id: &str) -> Result<bool> {
+        unimplemented!()
+    }
 }
 
 #[async_trait]
 impl AirtableClient for Airtable {
+    async fn validate_schema(&self, base_id: &str) -> Result<bool> {
+        let schema = self.get_base_schema(base_id, vec![]).await?;
+
+        let (Some(volunteers_table), Some(_)) = (
+            schema.tables.iter().find(|table| table.name == "Volunteers"),
+            schema.tables.iter().find(|table| table.name == "Nonprofits"),
+        ) else {
+            return Ok(false);
+        };
+
+        let v_has_required_fields = REQUIRED_VOLUNTEER_FIELDS.iter().all(|required_field| {
+            volunteers_table
+                .fields
+                .iter()
+                .map(|f| f.name.as_ref())
+                .collect::<Vec<_>>()
+                .contains(required_field)
+        });
+
+        if !v_has_required_fields {
+            return Ok(false);
+        }
+
+        let (Some(_), Some(_), Some(_)) = (
+            volunteers_table.views.iter().find(|view| view.name == VOLUNTEERS_VIEW),
+            volunteers_table.views.iter().find(|view| view.name == MENTORS_VIEW),
+            volunteers_table.views.iter().find(|view| view.name == MENTOR_MENTEE_LINKAGE_VIEW),
+        ) else {
+            return Ok(false);
+        };
+
+        Ok(true)
+    }
+
     async fn list_available_bases(&self) -> Result<Vec<Base>> {
         let mut offset = Option::<String>::None;
 
@@ -128,15 +166,15 @@ impl AirtableClient for Airtable {
 
         let mut volunteers = Vec::<Volunteer>::with_capacity(300);
 
-        while let Ok(res) =
-            self.list_records::<Volunteer>(base_id, "Volunteers", query.clone()).await
-        {
+        loop {
+            let res = self.list_records::<Volunteer>(base_id, "Volunteers", query.clone()).await?;
+
             volunteers
                 .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
 
             match res.offset {
                 Some(next_offset) => query.offset = Some(next_offset),
-                _ => break,
+                None => break,
             }
         }
 
@@ -152,7 +190,6 @@ impl AirtableClient for Airtable {
         let mut mentors = Vec::<Mentor>::with_capacity(100);
 
         loop {
-            println!("HERE");
             let res = self.list_records::<Mentor>(base_id, "Volunteers", query.clone()).await?;
 
             mentors
@@ -188,15 +225,15 @@ impl AirtableClient for Airtable {
 
         let mut nonprofits = Vec::<Nonprofit>::with_capacity(100);
 
-        while let Ok(res) =
-            self.list_records::<Nonprofit>(base_id, "Nonprofits", query.clone()).await
-        {
+        loop {
+            let res = self.list_records::<Nonprofit>(base_id, "Nonprofits", query.clone()).await?;
+
             nonprofits
                 .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
 
             match res.offset {
                 Some(next_offset) => query.offset = Some(next_offset),
-                _ => break,
+                None => break,
             }
         }
 
@@ -204,22 +241,29 @@ impl AirtableClient for Airtable {
     }
 
     async fn get_mentor_mentee_linkages(&self, base_id: &str) -> Result<Vec<MentorMenteeLinkage>> {
-        let query = ListRecordsQueryBuilder::default()
+        let mut query = ListRecordsQueryBuilder::default()
             .view(MENTOR_MENTEE_LINKAGE_VIEW.to_owned())
             .fields(REQUIRED_MENTOR_MENTEE_LINKAGE_FIELDS.map(ToString::to_string).to_vec())
             .build()?;
 
-        let data = self
-            .list_records::<MentorMenteeLinkage>(base_id, "Volunteers", query)
-            .await?
-            .records
-            .into_iter()
-            .map(|data| data.fields)
-            .collect::<Vec<_>>();
+        let mut linkages = Vec::<MentorMenteeLinkage>::with_capacity(100);
+        loop {
+            let res = self
+                .list_records::<MentorMenteeLinkage>(base_id, "Volunteers", query.clone())
+                .await?;
+
+            linkages
+                .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
+
+            match res.offset {
+                Some(next_offset) => query.offset = Some(next_offset),
+                None => break,
+            }
+        }
 
         log::info!("Retrieved mentor-mentee linkages from Airtable");
 
-        Ok(data)
+        Ok(linkages)
     }
 }
 

@@ -1,5 +1,6 @@
 use rand::distributions::Alphanumeric;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 use crate::app::api::v1::data_exports::requests::ExportUsersToWorkspaceRequest;
 
@@ -36,6 +37,7 @@ impl EmailPolicy {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PasswordPolicy {
     pub change_password_at_next_login: bool,
     pub generated_password_length: u8,

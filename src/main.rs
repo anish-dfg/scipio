@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
         Err(_) => println!("no .env file found"),
     };
 
-    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init();
+    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
 
     let args = Args::parse();
 

@@ -56,6 +56,13 @@ pub async fn import_airtable_base(
 ) -> Result<Response, AppError> {
     let storage_layer = &services.storage_layer;
 
+    if !services.airtable.validate_schema(&base_id).await? {
+        return Ok(api_response::error(
+            StatusCode::BAD_REQUEST,
+            "Invalid schema for airtable base",
+        ));
+    }
+
     let current_time = Utc::now();
     let time_only = current_time.format("%H:%M:%S").to_string();
 
