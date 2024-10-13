@@ -1,6 +1,5 @@
+use scipio_airtable::base_data::entities::Base;
 use serde::{Deserialize, Serialize};
-
-use crate::services::airtable::entities::bases::Base;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AvailableBases {

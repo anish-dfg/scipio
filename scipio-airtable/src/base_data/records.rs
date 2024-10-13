@@ -1,18 +1,12 @@
-//! This module defines the `AirtableRecordsClient` trait and implements it for `DfgAirtableClient`.
-
 use std::fmt::Display;
 
 use anyhow::Result;
-use async_trait::async_trait;
 use derive_builder::Builder;
 use scipio_macros::ToQueryString;
-use serde::Serialize;
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
 
-use crate::services::airtable::base_data::records::responses::ListRecordsResponse;
-use crate::services::airtable::DfgAirtableClient;
-
-pub mod responses;
+use super::responses::ListRecordsResponse;
+use crate::Airtable;
 
 /// A struct representing a sort query parameter.
 ///
@@ -64,38 +58,24 @@ pub struct ListRecordsQuery {
     pub record_metadata: Option<String>,
 }
 
-/// A trait to call the Airtable records API.
-///
-/// This trait is required to auto-impl `AirtableClient`
-#[async_trait]
-pub trait AirtableRecordsClient {
-    /// List records from a table.
-    ///
-    /// * `base_id`: The base ID that the table is in
-    /// * `table_id_or_name`: The ID or name of the table to list records from
-    /// * `query`: Query parameters for the request
-    async fn list_records(
+impl Airtable {
+    pub async fn list_records<T>(
         &self,
         base_id: &str,
-        table_id_or_name: &str,
-        query: Option<ListRecordsQuery>,
-    ) -> Result<ListRecordsResponse<Value>>;
-}
+        table_id: &str,
+        query: ListRecordsQuery,
+    ) -> Result<ListRecordsResponse<T>>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let url = format!(
+            "https://api.airtable.com/v0/{base_id}/{table_id}/{query}",
+            base_id = base_id,
+            table_id = table_id,
+            query = query.to_query_string()
+        );
 
-#[async_trait]
-impl AirtableRecordsClient for DfgAirtableClient {
-    async fn list_records(
-        &self,
-        base_id: &str,
-        table_id_or_name: &str,
-        query: Option<ListRecordsQuery>,
-    ) -> Result<ListRecordsResponse<Value>> {
-        let mut url = format!("https://api.airtable.com/v0/{base_id}/{table_id_or_name}");
-        if let Some(ref qs) = query {
-            url.push_str(&qs.to_query_string());
-        }
-
-        let data = self.http.get(url).send().await?.json::<ListRecordsResponse<Value>>().await?;
+        let data = self.http.get(&url).send().await?.json::<ListRecordsResponse<T>>().await?;
 
         Ok(data)
     }

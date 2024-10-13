@@ -9,9 +9,7 @@ use crate::services::mail::{OnboardingEmailParams, OnboardingEmailParamsBuilder}
 use crate::services::storage::entities::VolunteerDetails;
 use crate::services::storage::volunteers::InsertVolunteerExportedToWorkspace;
 use crate::services::storage::ExecOptsBuilder;
-use crate::services::workspace::entities::{
-    CreateWorkspaceUser, CreateWorkspaceUserBuilder, NameBuilder,
-};
+use crate::services::workspace::entities::CreateWorkspaceVolunteer;
 
 pub struct ExportParams {
     pub job_id: Uuid,
@@ -22,7 +20,7 @@ pub struct ExportParams {
 }
 
 struct ProcessedVolunteers {
-    pub export_data: Vec<CreateWorkspaceUser>,
+    pub export_data: Vec<CreateWorkspaceVolunteer>,
     pub pantheon_data: Vec<InsertVolunteerExportedToWorkspace>,
     pub onboarding_email_data: Vec<OnboardingEmailParams>,
 }
@@ -31,34 +29,27 @@ fn process_volunteers(params: &ExportParams) -> Result<ProcessedVolunteers> {
     let mut pantheon_data =
         Vec::<InsertVolunteerExportedToWorkspace>::with_capacity(params.volunteers.len());
 
-    let mut export_data = Vec::<CreateWorkspaceUser>::with_capacity(params.volunteers.len());
+    let mut export_data = Vec::<CreateWorkspaceVolunteer>::with_capacity(params.volunteers.len());
 
     let mut onboarding_email_data =
         Vec::<OnboardingEmailParams>::with_capacity(params.volunteers.len());
 
     for v in &params.volunteers {
-        let primary_email = params.email_policy.build_email(&v.first_name, &v.last_name);
+        let primary_email = params.email_policy.build_volunteer_email(&v.first_name, &v.last_name);
         let temporary_password = params.password_policy.generate_password();
 
-        let workspace_user = CreateWorkspaceUserBuilder::default()
-            .primary_email(primary_email.clone())
-            .name(
-                NameBuilder::default()
-                    .given_name(v.first_name.clone())
-                    .family_name(v.last_name.clone())
-                    .build()
-                    .unwrap(),
-            )
-            .password(temporary_password)
-            .change_password_at_next_login(params.password_policy.change_password_at_next_login)
-            .recovery_email(v.email.clone())
-            // .recovery_phone(v.phone.clone())
-            .build()?;
+        let workspace_user = CreateWorkspaceVolunteer {
+            primary_email: primary_email.clone(),
+            first_name: v.first_name.clone(),
+            last_name: v.last_name.clone(),
+            password: temporary_password.clone(),
+            recovery_email: v.email.clone(),
+        };
 
         onboarding_email_data.push(
             OnboardingEmailParamsBuilder::default()
-                .first_name(workspace_user.name.given_name.clone())
-                .last_name(workspace_user.name.family_name.clone())
+                .first_name(workspace_user.first_name.clone())
+                .last_name(workspace_user.last_name.clone())
                 // .email(workspace_user.recovery_email.clone())
                 .email("anish@developforgood.org")
                 .workspace_email(workspace_user.primary_email.clone())
@@ -82,12 +73,12 @@ fn process_volunteers(params: &ExportParams) -> Result<ProcessedVolunteers> {
 async fn export_volunteers_to_workspace(
     services: &ExportServices,
     principal: &str,
-    export_data: Vec<CreateWorkspaceUser>,
+    export_data: Vec<CreateWorkspaceVolunteer>,
 ) -> usize {
     let mut successfully_exported = 0usize;
     for user in export_data {
-        let name = format!("{} {}", &user.name.given_name, &user.name.family_name);
-        match services.workspace.create_user(principal, user).await {
+        let name = format!("{} {}", &user.first_name, &user.last_name);
+        match services.workspace.create_volunteer(principal, user).await {
             Ok(_) => {
                 log::info!("Successfully exported user {} to workspace", name);
                 successfully_exported += 1;

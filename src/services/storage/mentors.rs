@@ -22,7 +22,7 @@ use crate::services::storage::{Acquire, ExecOpts, PgBackend};
 /// * `offer_letter_signature`: Whether the mentor has signed the offer letter
 /// * `company`: The company the mentor works for
 /// * `job_title`: The job title of the mentor
-#[derive(Builder, Serialize, Deserialize, Clone)]
+#[derive(Debug, Builder, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateMentor {
     // pub project_cycle_id: Uuid,

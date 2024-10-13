@@ -5,39 +5,11 @@ pub mod entities;
 pub mod noop;
 pub mod service_account;
 
-#[cfg(test)]
-mod tests;
-
 use anyhow::Result;
 use async_trait::async_trait;
-use reqwest::{Response, StatusCode};
-use reqwest_retry::{default_on_request_failure, Retryable, RetryableStrategy};
+use entities::CreateWorkspaceVolunteer;
 
 use super::Service;
-use crate::services::workspace::entities::CreateWorkspaceUser;
-
-struct DefaultRetryStrategy;
-
-impl RetryableStrategy for DefaultRetryStrategy {
-    fn handle(&self, res: &Result<Response, reqwest_middleware::Error>) -> Option<Retryable> {
-        match res {
-            // retry if 412 or 429
-            Ok(success)
-                if success.status() == StatusCode::PRECONDITION_FAILED
-                    || success.status() == StatusCode::TOO_MANY_REQUESTS =>
-            {
-                println!("Retrying request because of status code: {}", success.status());
-                dbg!(success.status());
-                log::info!("Retrying request because of status code: {}", success.status());
-                Some(Retryable::Transient)
-            }
-            // otherwise do not retry a successful request
-            Ok(_) => None,
-            // but maybe retry a request failure
-            Err(error) => default_on_request_failure(error),
-        }
-    }
-}
 
 /// A trait for interacting with the Google Workspace API.
 ///
@@ -57,7 +29,11 @@ pub trait WorkspaceClient: Send + Sync {
     /// header. This is a security measure and we are delegating authentication to Auth0. Never
     /// call this function with user provided input. This is one reason why we should try to find
     /// an alternative to the service account approach.
-    async fn create_user(&self, principal: &str, user: CreateWorkspaceUser) -> Result<()> {
+    async fn create_volunteer(
+        &self,
+        principal: &str,
+        volunteer: CreateWorkspaceVolunteer,
+    ) -> Result<()> {
         unimplemented!()
     }
 

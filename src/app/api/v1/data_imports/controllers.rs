@@ -15,7 +15,6 @@ use crate::app::api::v1::data_imports::responses::AvailableBases;
 use crate::app::api_response;
 use crate::app::errors::AppError;
 use crate::app::state::Services;
-use crate::services::airtable::base_data::bases::responses::V1SchemaValidator;
 use crate::services::storage::jobs::CreateJobBuilder;
 use crate::services::storage::types::{JobData, JobDetails, JobType};
 use crate::services::storage::ExecOptsBuilder;
@@ -34,11 +33,8 @@ pub async fn list_available_airtable_bases(
 ) -> Result<Response, AppError> {
     let airtable = &ctx.airtable;
 
-    // NOTE: We have very few bases and will not reach the point that we need to paginate for at
-    // least sevaral years. At that point, we can transform this into a loop  like when we fetch
-    // volunteers, nonprofits, mentors, etc.
-    let res = airtable.list_bases(None).await?;
-    let bases = AvailableBases { bases: res.bases };
+    let bases = airtable.list_available_bases().await?;
+    let bases = AvailableBases { bases };
 
     Ok(api_response::success(StatusCode::OK, bases)?)
 }
@@ -59,15 +55,9 @@ pub async fn import_airtable_base(
     Json(payload): Json<ImportAirtableBase>,
 ) -> Result<Response, AppError> {
     let storage_layer = &services.storage_layer;
-    let airtable = &services.airtable;
 
     let current_time = Utc::now();
     let time_only = current_time.format("%H:%M:%S").to_string();
-
-    let schema = airtable.get_base_schema(&base_id, None).await?;
-    if !schema.validate() {
-        api_response::error(StatusCode::BAD_REQUEST, "Invalid schema for Airtable base");
-    }
 
     let data = CreateJobBuilder::default()
         .label("Import Airtable Base")
@@ -89,7 +79,6 @@ pub async fn import_airtable_base(
         description: payload.description,
         job_id,
         base_id: base_id.clone(),
-        tables: schema.tables,
     };
 
     task::spawn(async move {

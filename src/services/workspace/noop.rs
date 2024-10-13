@@ -3,7 +3,7 @@
 use anyhow::Result;
 use axum::async_trait;
 
-use crate::services::workspace::entities::CreateWorkspaceUser;
+use crate::services::workspace::entities::CreateWorkspaceVolunteer;
 use crate::services::workspace::WorkspaceClient;
 use crate::services::Service;
 
@@ -20,7 +20,11 @@ pub struct NoopWorkspaceClient;
 
 #[async_trait]
 impl WorkspaceClient for NoopWorkspaceClient {
-    async fn create_user(&self, _principal: &str, _user: CreateWorkspaceUser) -> Result<()> {
+    async fn create_volunteer(
+        &self,
+        _principal: &str,
+        _user: CreateWorkspaceVolunteer,
+    ) -> Result<()> {
         Ok(())
     }
 

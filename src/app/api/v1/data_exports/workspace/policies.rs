@@ -10,7 +10,7 @@ pub struct EmailPolicy {
 }
 
 impl EmailPolicy {
-    pub fn build_email(&self, first_name: &str, last_name: &str) -> String {
+    pub fn build_volunteer_email(&self, first_name: &str, last_name: &str) -> String {
         let mut base = if self.use_first_and_last_name {
             format!(
                 "{}{}{}",
@@ -31,7 +31,7 @@ impl EmailPolicy {
 
         let mut cleaned = base.chars().filter(|c| c.is_alphanumeric()).collect::<String>();
 
-        cleaned.push_str("@developforgood.org");
+        cleaned.push_str("@volunteer.developforgood.org");
         cleaned
     }
 }

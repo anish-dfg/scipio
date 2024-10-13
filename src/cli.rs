@@ -1,22 +1,24 @@
 //! This module defines the command line interface to Scipio.
 
+use std::env;
 use std::sync::Arc;
 
 use anyhow::{bail, Result};
 use clap::{Parser, ValueEnum};
+use scipio_airtable::Airtable;
+use scipio_sendgrid::Sendgrid;
+use scipio_workspace::{ServiceAccount, ServiceAccountJson};
 use serde::Serialize;
 
 use crate::app::state::{Services, ServicesBuilder};
-use crate::services::airtable::{AirtableService, DfgAirtableClient};
+use crate::services::airtable::AirtableService;
 use crate::services::auth::auth0::Auth0;
 use crate::services::auth::noop::NoopAuthenticator;
 use crate::services::auth::AuthenticatorService;
 use crate::services::mail::noop::NoopEmailClient;
-use crate::services::mail::sendgrid::SendgridEmailClient;
 use crate::services::mail::MailService;
 use crate::services::storage::{PgBackend, StorageService};
 use crate::services::workspace::noop::NoopWorkspaceClient;
-use crate::services::workspace::service_account::ServiceAccountWorkspaceClient;
 use crate::services::workspace::WorkspaceService;
 
 #[derive(ValueEnum, Serialize, Debug, Clone)]
@@ -100,13 +102,7 @@ pub struct Args {
     pub workspace_service: WorkspaceServiceImpl,
 
     #[arg(long, env)]
-    pub workspace_client_email: String,
-    #[arg(long, env)]
-    pub workspace_private_key_id: String,
-    #[arg(long, env)]
-    pub workspace_private_key: String,
-    #[arg(long, env, default_value = "https://oauth2.googleapis.com/token")]
-    pub workspace_token_url: String,
+    pub workspace_service_account_json: String,
 
     #[arg(long, env)]
     pub airtable_api_token: String,
@@ -142,7 +138,7 @@ impl Args {
         let service: Arc<dyn MailService> = match self.mail_service {
             MailServiceImpl::Noop => Arc::new(NoopEmailClient),
             MailServiceImpl::Sendgrid => match self.sendgrid_api_key.as_ref() {
-                Some(api_key) => Arc::new(SendgridEmailClient::new(api_key, 3)?),
+                Some(api_key) => Arc::new(Sendgrid::new(api_key, 3)?),
                 _ => bail!("Sendgrid API key must be provided if mail service is sendgrid"),
             },
         };
@@ -150,22 +146,19 @@ impl Args {
     }
 
     fn init_workspace_service(&self) -> Result<Arc<dyn WorkspaceService>> {
+        let service_account_json = env::var("WORKSPACE_SERVICE_ACCOUNT_JSON")?;
+        let data = serde_json::from_str::<ServiceAccountJson>(&service_account_json)?;
+
         let service: Arc<dyn WorkspaceService> = match self.workspace_service {
             WorkspaceServiceImpl::Noop => Arc::new(NoopWorkspaceClient),
-            WorkspaceServiceImpl::ServiceAccount => Arc::new(ServiceAccountWorkspaceClient::new(
-                &self.workspace_client_email,
-                &self.workspace_private_key_id,
-                &self.workspace_private_key,
-                &self.workspace_token_url,
-                8,
-            )),
+            WorkspaceServiceImpl::ServiceAccount => Arc::new(ServiceAccount::new(data, 5)),
         };
 
         Ok(service)
     }
 
     fn init_airtable_service(&self) -> Result<Arc<dyn AirtableService>> {
-        Ok(Arc::new(DfgAirtableClient::default_with_token(&self.airtable_api_token)?))
+        Ok(Arc::new(Airtable::new(&self.airtable_api_token, 5)?))
     }
 
     async fn init_storage_service(&self) -> Result<Arc<dyn StorageService>> {

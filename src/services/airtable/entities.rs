@@ -11,7 +11,7 @@ use crate::services::storage::volunteers::CreateVolunteer;
 
 #[derive(Builder, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "PascalCase")]
-pub struct IntermediateNonprofitData {
+pub struct Nonprofit {
     #[builder(setter(into))]
     #[serde(rename = "FirstName")]
     pub representative_first_name: String,
@@ -24,9 +24,6 @@ pub struct IntermediateNonprofitData {
     #[builder(setter(into))]
     #[serde(rename = "NonprofitEmail")]
     pub email: String,
-    #[serde(rename = "Cc")]
-    #[builder(setter(into), default = "None")]
-    pub email_cc: Option<String>,
     #[builder(setter(into))]
     pub phone: String,
     #[builder(setter(into))]
@@ -47,14 +44,14 @@ pub struct IntermediateNonprofitData {
     pub impact_causes: Option<Vec<String>>,
 }
 
-impl From<IntermediateNonprofitData> for CreateNonprofit {
-    fn from(value: IntermediateNonprofitData) -> Self {
+impl From<Nonprofit> for CreateNonprofit {
+    fn from(value: Nonprofit) -> Self {
         CreateNonprofit {
             representative_first_name: value.representative_first_name,
             representative_last_name: value.representative_last_name,
             representative_job_title: value.representative_job_title,
             email: value.email,
-            email_cc: value.email_cc,
+            email_cc: None,
             phone: value.phone,
             org_name: value.org_name,
             project_name: value.project_name,
@@ -89,11 +86,14 @@ impl From<IntermediateNonprofitData> for CreateNonprofit {
 
 #[derive(Debug, Builder, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
-pub struct IntermediateVolunteerData {
+pub struct Volunteer {
     #[builder(setter(into))]
     pub first_name: String,
     #[builder(setter(into))]
     pub last_name: String,
+    #[builder(setter(into))]
+    #[serde(rename = "OrgName (from ProjectRecordID)")]
+    pub org_name: Vec<String>,
     #[builder(setter(into))]
     pub email: String,
     #[builder(setter(into), default = "None")]
@@ -124,8 +124,8 @@ pub struct IntermediateVolunteerData {
     pub hear_about: Vec<VolunteerHearAbout>,
 }
 
-impl From<IntermediateVolunteerData> for CreateVolunteer {
-    fn from(value: IntermediateVolunteerData) -> Self {
+impl From<Volunteer> for CreateVolunteer {
+    fn from(value: Volunteer) -> Self {
         CreateVolunteer {
             first_name: value.first_name,
             last_name: value.last_name,
@@ -152,10 +152,9 @@ impl From<IntermediateVolunteerData> for CreateVolunteer {
     }
 }
 
-#[derive(Builder, Serialize, Deserialize, Clone)]
+#[derive(Debug, Builder, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
-pub struct IntermediateMentorData {
-    // pub project_cycle_id: Uuid,
+pub struct Mentor {
     #[builder(setter(into))]
     pub first_name: String,
     #[builder(setter(into))]
@@ -169,6 +168,9 @@ pub struct IntermediateMentorData {
     #[builder(setter(into))]
     pub job_title: String,
     #[builder(setter(into))]
+    #[serde(rename = "OrgName (from ProjectRecordID)")]
+    pub org_name: Vec<String>,
+    #[builder(setter(into))]
     pub country: String,
     #[builder(setter(into), default = "None")]
     pub us_state: Option<String>,
@@ -181,10 +183,12 @@ pub struct IntermediateMentorData {
     pub prior_dfg: Option<Vec<String>>,
     pub university: Option<Vec<String>>,
     pub hear_about: Option<Vec<VolunteerHearAbout>>,
+    #[serde(rename = "ProjectRole")]
+    pub project_roles: Vec<String>,
 }
 
-impl From<IntermediateMentorData> for CreateMentor {
-    fn from(value: IntermediateMentorData) -> Self {
+impl From<Mentor> for CreateMentor {
+    fn from(value: Mentor) -> Self {
         CreateMentor {
             first_name: value.first_name,
             last_name: value.last_name,
@@ -204,10 +208,24 @@ impl From<IntermediateMentorData> for CreateMentor {
             experience_level: value.experience_level,
             prior_mentor: value.prior_mentorship.contains(&"Yes, I've been a mentor".to_owned()),
             prior_mentee: value.prior_mentorship.contains(&"Yes, I've been a mentee".to_owned()),
-            // prior_student: !value.prior_dfg.contains(&"No".to_owned()),
             prior_student: value.prior_dfg.unwrap_or_default().contains(&"Yes".to_owned()),
             university: value.university.unwrap_or_default(),
             hear_about: value.hear_about.unwrap_or(vec![VolunteerHearAbout::Other]),
         }
     }
+}
+
+#[derive(Debug, Builder, Deserialize, Serialize, Clone)]
+pub struct MentorMenteeLinkage {
+    #[serde(rename = "Email")]
+    pub mentor_email: String,
+    #[serde(rename = "Mentee Email (from Volunteers)", default)]
+    pub mentee_email: Vec<String>,
+}
+
+#[derive(Builder, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "PascalCase")]
+pub struct VolunteerNonprofitLinkage {
+    pub email: String,
+    pub org_name: String,
 }

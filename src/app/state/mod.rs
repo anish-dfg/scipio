@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use derive_builder::Builder;
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde::Serialize;
 use sqlx::{Database, Postgres};
 
 use crate::services::airtable::AirtableService;

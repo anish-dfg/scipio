@@ -28,7 +28,7 @@ use crate::services::storage::{Acquire, ExecOpts};
 /// * `state_hq`: The state or province where the nonprofit is headquartered
 /// * `address`: The address of the nonprofit
 /// * `size`: The size of the nonprofit
-#[derive(Builder, Deserialize, Serialize, Clone)]
+#[derive(Debug, Builder, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateNonprofit {
     #[builder(setter(into))]
