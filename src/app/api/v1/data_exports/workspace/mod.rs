@@ -1,5 +1,7 @@
 pub mod policies;
 
+use std::env;
+
 use anyhow::Result;
 use policies::{EmailPolicy, PasswordPolicy};
 use uuid::Uuid;
@@ -46,11 +48,17 @@ fn process_volunteers(params: &ExportParams) -> Result<ProcessedVolunteers> {
             recovery_email: v.email.clone(),
         };
 
+        // if let Some(override) = env::var("MAIL_RECIPIENT_OVERRIDE")
+
         onboarding_email_data.push(
             OnboardingEmailParamsBuilder::default()
                 .first_name(workspace_user.first_name.clone())
                 .last_name(workspace_user.last_name.clone())
-                .email(workspace_user.recovery_email.clone())
+                .email(
+                    env::var("MAIL_RECIPIENT_OVERRIDE")
+                        .unwrap_or_else(|_| workspace_user.recovery_email.clone()),
+                )
+                // .email(workspace_user.recovery_email.clone())
                 // .email("anish@developforgood.org")
                 .workspace_email(workspace_user.primary_email.clone())
                 .temporary_password(workspace_user.password.clone())
@@ -113,7 +121,14 @@ async fn send_onboarding_emails(
     onboarding_data: Vec<OnboardingEmailParams>,
 ) -> Result<()> {
     for email in onboarding_data {
-        services.mail.send_onboarding_email(email).await?;
+        match services.mail.send_onboarding_email(email.clone()).await {
+            Ok(_) => {
+                log::info!("Sent onboarding email to {}", email.email);
+            }
+            Err(e) => {
+                log::error!("Failed to send onboarding email to {}: {}", email.email, e);
+            }
+        }
     }
     Ok(())
 }

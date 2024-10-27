@@ -25,7 +25,10 @@ impl EmailPolicy {
 
         if self.add_unique_numeric_suffix {
             let mut rng = rand::thread_rng();
-            let suffix = rng.gen_range(10..100);
+            let mut suffix = rng.gen_range(10..100);
+            if suffix == 69 {
+                suffix = 96;
+            }
 
             base.push_str(&suffix.to_string());
         }

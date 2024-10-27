@@ -38,6 +38,8 @@ mod app;
 mod cli;
 mod services;
 
+use std::env;
+
 use anyhow::Result;
 use clap::Parser;
 use tokio::net::TcpListener;
@@ -46,7 +48,7 @@ use crate::cli::Args;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init();
 
     match dotenvy::dotenv() {
         Ok(_) => log::info!("loaded .env file"),
@@ -54,6 +56,10 @@ async fn main() -> Result<()> {
     };
 
     let args = Args::parse();
+    log::info!(
+        "MAIL RECIPIENT OVERRIDE: {}",
+        env::var("MAIL_RECIPIENT_OVERRIDE").unwrap_or_default()
+    );
 
     let addr = format!("{}:{}", args.host, args.port);
 
