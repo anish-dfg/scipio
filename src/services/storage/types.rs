@@ -109,6 +109,9 @@ pub struct JobDetails {
 #[sqlx(type_name = "age_range")]
 #[serde(rename_all = "camelCase")]
 pub enum AgeRange {
+    #[serde(rename = "17 and under")]
+    #[sqlx(rename = "17_and_under")]
+    RUnder17,
     #[serde(rename = "18 - 24")]
     #[sqlx(rename = "18-24")]
     R18_24,
@@ -133,6 +136,9 @@ pub enum AgeRange {
     #[serde(rename = "65+")]
     #[sqlx(rename = "65+")]
     ROver65,
+    #[serde(rename = "Prefer not to say")]
+    #[sqlx(rename = "prefer_not_to_say")]
+    PreferNotToSay,
 }
 
 /// Possible ethnicities for volunteers

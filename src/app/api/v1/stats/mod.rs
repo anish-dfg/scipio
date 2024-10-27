@@ -20,12 +20,12 @@ use crate::app::state::Services;
 pub struct StatsApi;
 
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
-    let guard1 = make_rbac(vec![]).await;
+    let read_guard = make_rbac(vec!["read:stats".to_owned()]).await;
 
     let fetch_basic_stats = routing::get(controllers::fetch_basic_stats);
 
     Router::new()
         .route("/:project_cycle_id/basic", fetch_basic_stats)
-        .route_layer(from_fn_with_state(ctx.clone(), guard1))
+        .route_layer(from_fn_with_state(ctx.clone(), read_guard))
         .with_state(ctx.clone())
 }

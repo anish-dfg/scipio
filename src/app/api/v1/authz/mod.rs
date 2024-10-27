@@ -26,7 +26,7 @@ pub struct AuthzApi;
 ///
 /// * `ctx`: The application context
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
-    let basic_guard = make_rbac(vec![]).await;
+    let guard = make_rbac(vec![]).await;
 
     let user = routing::post(controllers::user);
     let permissions = routing::post(controllers::permissions);
@@ -34,6 +34,6 @@ pub async fn build(ctx: Arc<Services>) -> Router<()> {
     Router::new()
         .route("/user", user)
         .route("/permissions", permissions)
-        .route_layer(from_fn_with_state(ctx.clone(), basic_guard))
+        .route_layer(from_fn_with_state(ctx.clone(), guard))
         .with_state(ctx.clone())
 }

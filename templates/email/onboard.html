@@ -1,26 +1,35 @@
 {% extends "email/base.html" %}
 <!---->
 {% block content %}
-<h2 class="welcome">Welcome {{ name }},</h2>
+<h2 class="welcome">Greetings {{ name }},</h2>
 <div class=".container">
   <p>
-    We're glad to have you at Develop for Good! To get started, you will need to
-    activate your email. Your new Develop for Good email is:
+    Welcome to Develop for Good! To get started with this batch, you will need to
+    activate your Develop for Good email at your earliest convenience.
   </p>
-
-  <strong>{{ email }}</strong>, and your temporary password is:
-  <strong>{{ temporaryPassword }}</strong>.
-
-  <br />
   <p>
-    Once you log in, you will be prompted to change your password. Please do so
-    as soon as you can so that you can access Slack, Notion, Figma, and other
-    internal services for this project batch.
+    Your new Develop for Good email is: {{ email }}<br />Your temporary password
+    is: {{ temporaryPassword }}
   </p>
-
+  <div>
+Please sign in with your credentials above here: <a href="https://accounts.google.com">Google Workspace Login</a>. Once you log in, you will be prompted to change your password.
+    Once you log in, you will be prompted to change your password.
+  </div>
   <p>
-    If you have any questions, please don't hesitate to reach out to your
-    product lead or the Develop for Good management team.
+     We will be sending you an invitation to join our Slack workspace through your
+     Develop for Good email shortly. Once you log into our organization Slack, you
+     will be able to introduce yourself to your teammates and nonprofit client on
+     your project-specific channel. All project and org-wide communications will be
+     hosted on Slack, including reminders and recaps about our upcoming sessions
+     this week for orientation and onboarding.
+  </p>
+  <p>
+     We request that you activate your email and accept our Slack invite as soon as
+     it lands in your inbox to avoid delays with onboarding. If you have any
+     questions, please don't hesitate to email onboarding@developforgood.org for help.
+  </p>
+  <p>
+     Welcome aboard!
   </p>
 </div>
 {% endblock content %}

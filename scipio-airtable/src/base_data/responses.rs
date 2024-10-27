@@ -27,3 +27,5 @@ pub struct ListRecordsResponse<T> {
     pub records: Vec<Record<T>>,
     pub offset: Option<String>,
 }
+
+pub type GetRecordResponse<T> = Record<T>;

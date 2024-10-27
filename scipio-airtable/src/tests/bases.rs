@@ -1,13 +1,12 @@
 use rstest::rstest;
 
-use super::fixtures::airtable;
-use crate::Airtable;
+use super::fixtures::{context, AsyncTestContext};
 
 #[cfg(feature = "integration")]
 #[rstest]
 #[tokio::test]
-pub async fn test_list_bases(airtable: Airtable) {
-    let bases_response = airtable.list_bases(None).await.unwrap();
+pub async fn test_list_bases(context: AsyncTestContext) {
+    let bases_response = context.airtable.list_bases(None).await.unwrap();
     dbg!(&bases_response);
 }
 

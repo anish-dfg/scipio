@@ -1,5 +1,7 @@
 pub mod base_data;
 mod retry;
+#[cfg(test)]
+mod tests;
 
 use anyhow::Result;
 use reqwest::header::{self, HeaderMap, HeaderValue};
@@ -9,6 +11,7 @@ use reqwest_retry::policies::ExponentialBackoff;
 use reqwest_retry::RetryTransientMiddleware;
 use retry::DefaultRetryStrategy;
 
+#[derive(Clone)]
 pub struct Airtable {
     http: ClientWithMiddleware,
 }

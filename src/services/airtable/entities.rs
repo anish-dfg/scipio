@@ -9,7 +9,7 @@ use crate::services::storage::types::{
 };
 use crate::services::storage::volunteers::CreateVolunteer;
 
-#[derive(Builder, Deserialize, Serialize, Clone)]
+#[derive(Debug, Builder, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Nonprofit {
     #[builder(setter(into))]

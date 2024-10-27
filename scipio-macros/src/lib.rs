@@ -1,6 +1,9 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Fields, GenericArgument, PathArguments, Type};
+use syn::{
+    parse_macro_input, Data, DeriveInput, Fields, GenericArgument, Ident, ItemStruct,
+    PathArguments, Type,
+};
 
 const SUPPORTED_OPTION_TYPES: [&str; 5] = [
     "Option",
@@ -13,11 +16,7 @@ const SUPPORTED_OPTION_TYPES: [&str; 5] = [
 fn unwrap_type_twice(ty: &Type) -> (std::option::Option<String>, std::option::Option<String>) {
     if let Type::Path(type_path) = ty {
         let raw_first_segment_path = type_path.path.segments.iter().fold(
-            if type_path.path.leading_colon.is_some() {
-                "::".to_string()
-            } else {
-                "".to_string()
-            },
+            if type_path.path.leading_colon.is_some() { "::".to_string() } else { "".to_string() },
             |acc, el| acc + &el.ident.to_string() + "::",
         );
 
@@ -130,6 +129,53 @@ pub fn to_query_string_derive(input: TokenStream) -> TokenStream {
                 query
 
             }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(Partial)]
+pub fn derive_partial(input: TokenStream) -> TokenStream {
+    // Parse the input token stream as a DeriveInput (struct definition)
+    let input = parse_macro_input!(input as DeriveInput);
+
+    // Extract the name of the struct
+    let struct_name = &input.ident;
+
+    // Generate a new struct name by prepending "Partial" to the original struct name
+    let partial_struct_name =
+        syn::Ident::new(&format!("Partial{}", struct_name), struct_name.span());
+
+    // Generate field wrapping in Option<T> (for each field in the original struct)
+    let fields = match input.data {
+        Data::Struct(ref data_struct) => {
+            match data_struct.fields {
+                Fields::Named(ref fields) => {
+                    // Map each field to Option<T>
+                    fields
+                        .named
+                        .iter()
+                        .map(|f| {
+                            let name = &f.ident;
+                            let ty = &f.ty;
+                            quote! {
+                                pub #name: Option<#ty>
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                }
+                _ => panic!("Partial can only be derived for structs with named fields"),
+            }
+        }
+        _ => panic!("Partial can only be derived for structs"),
+    };
+
+    // Generate the new struct definition with Option<T> fields
+    let expanded = quote! {
+        // Define the new struct with Option-wrapped fields
+        pub struct #partial_struct_name {
+            #(#fields),*
         }
     };
 

@@ -45,13 +45,12 @@ pub struct DataExportsApi;
 ///
 /// * `ctx`: The application context
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
-    let guard1 = make_rbac(vec![]).await;
+    let export_workspace_guard = make_rbac(vec!["export:volunteers-workspace".to_owned()]).await;
 
     let export_users_to_workspace = routing::post(controllers::export_users_to_workspace);
 
     Router::new()
         .route("/:project_cycle_id/workspace", export_users_to_workspace)
-        // .route("/x", routing::post(workspace::c))
-        .route_layer(from_fn_with_state(ctx.clone(), guard1))
+        .route_layer(from_fn_with_state(ctx.clone(), export_workspace_guard))
         .with_state(ctx.clone())
 }

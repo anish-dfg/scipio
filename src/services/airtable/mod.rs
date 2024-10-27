@@ -167,7 +167,7 @@ impl AirtableClient for Airtable {
         let mut volunteers = Vec::<Volunteer>::with_capacity(300);
 
         loop {
-            let res = self.list_records::<Volunteer>(base_id, "Volunteers", query.clone()).await?;
+            let res = self.list_records::<Volunteer>(base_id, "Volunteers", Some(&query)).await?;
 
             volunteers
                 .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
@@ -190,7 +190,7 @@ impl AirtableClient for Airtable {
         let mut mentors = Vec::<Mentor>::with_capacity(100);
 
         loop {
-            let res = self.list_records::<Mentor>(base_id, "Volunteers", query.clone()).await?;
+            let res = self.list_records::<Mentor>(base_id, "Volunteers", Some(&query)).await?;
 
             mentors
                 .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
@@ -226,7 +226,7 @@ impl AirtableClient for Airtable {
         let mut nonprofits = Vec::<Nonprofit>::with_capacity(100);
 
         loop {
-            let res = self.list_records::<Nonprofit>(base_id, "Nonprofits", query.clone()).await?;
+            let res = self.list_records::<Nonprofit>(base_id, "Nonprofits", Some(&query)).await?;
 
             nonprofits
                 .append(&mut res.records.into_iter().map(|data| data.fields).collect::<Vec<_>>());
@@ -249,7 +249,7 @@ impl AirtableClient for Airtable {
         let mut linkages = Vec::<MentorMenteeLinkage>::with_capacity(100);
         loop {
             let res = self
-                .list_records::<MentorMenteeLinkage>(base_id, "Volunteers", query.clone())
+                .list_records::<MentorMenteeLinkage>(base_id, "Volunteers", Some(&query))
                 .await?;
 
             linkages

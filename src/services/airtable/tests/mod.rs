@@ -10,9 +10,9 @@ use crate::services::airtable::AirtableClient;
 #[rstest]
 #[tokio::test]
 pub async fn test_list_mentors(airtable: Airtable) -> Result<()> {
-    let mentors = airtable.list_mentors("appS5z0uqz4l0IJvP").await?;
+    let records = airtable.list_mentors("appcOdqCMHAlxDqDZ").await?;
 
-    dbg!(&mentors);
+    dbg!(&records);
 
     Ok(())
 }

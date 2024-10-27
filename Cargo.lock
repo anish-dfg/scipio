@@ -2594,7 +2594,9 @@ dependencies = [
  "anyhow",
  "chrono",
  "derive_builder",
+ "derive_more",
  "dotenvy",
+ "log",
  "reqwest",
  "reqwest-middleware",
  "reqwest-retry",
@@ -2604,6 +2606,8 @@ dependencies = [
  "serde_json",
  "serde_with",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

@@ -57,6 +57,7 @@ pub async fn import_airtable_base(
     let storage_layer = &services.storage_layer;
 
     if !services.airtable.validate_schema(&base_id).await? {
+        log::error!("Invalid schema for airtable base");
         return Ok(api_response::error(
             StatusCode::BAD_REQUEST,
             "Invalid schema for airtable base",

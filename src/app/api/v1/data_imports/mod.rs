@@ -33,14 +33,16 @@ impl FromRef<Arc<Services>> for ImportServices {
 }
 
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
-    let guard1 = make_rbac(vec!["read:available-bases".to_owned()]).await;
+    let read_guard = make_rbac(vec!["read:available-bases".to_owned()]).await;
+    // let import_guard = make_rbac(vec!["import:available-bases".to_owned()]).await;
 
     let import_airtable_base = routing::post(controllers::import_airtable_base);
     let list_available_airtable_bases = routing::get(controllers::list_available_airtable_bases);
 
     Router::new()
-        .route("/airtable/base/:base_id", import_airtable_base)
         .route("/airtable/available-bases", list_available_airtable_bases)
-        .route_layer(from_fn_with_state(ctx.clone(), guard1))
+        .route("/airtable/base/:base_id", import_airtable_base)
+        .route_layer(from_fn_with_state(ctx.clone(), read_guard))
+        // .route_layer(from_fn_with_state(ctx.clone(), import_guard))
         .with_state(ctx.clone())
 }

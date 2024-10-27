@@ -50,8 +50,8 @@ fn process_volunteers(params: &ExportParams) -> Result<ProcessedVolunteers> {
             OnboardingEmailParamsBuilder::default()
                 .first_name(workspace_user.first_name.clone())
                 .last_name(workspace_user.last_name.clone())
-                // .email(workspace_user.recovery_email.clone())
-                .email("anish@developforgood.org")
+                .email(workspace_user.recovery_email.clone())
+                // .email("anish@developforgood.org")
                 .workspace_email(workspace_user.primary_email.clone())
                 .temporary_password(workspace_user.password.clone())
                 .build()?,

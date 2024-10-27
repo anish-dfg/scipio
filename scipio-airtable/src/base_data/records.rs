@@ -2,10 +2,11 @@ use std::fmt::Display;
 
 use anyhow::Result;
 use derive_builder::Builder;
+use derive_more::derive::Display;
 use scipio_macros::ToQueryString;
 use serde::{Deserialize, Serialize};
 
-use super::responses::ListRecordsResponse;
+use super::responses::{GetRecordResponse, ListRecordsResponse};
 use crate::Airtable;
 
 /// A struct representing a sort query parameter.
@@ -58,25 +59,78 @@ pub struct ListRecordsQuery {
     pub record_metadata: Option<String>,
 }
 
+#[derive(Debug, Serialize, Clone, Display)]
+#[serde(rename_all = "snake_case")]
+pub enum CellFormat {
+    #[display("json")]
+    Json,
+    #[display("string")]
+    String,
+}
+
+#[derive(Debug, Serialize, Clone, Builder, ToQueryString)]
+#[serde(rename_all = "camelCase")]
+pub struct GetRecordQuery {
+    #[builder(setter(into), default)]
+    pub time_zone: Option<String>,
+    #[builder(default, setter(into))]
+    pub user_locale: Option<String>,
+    #[builder(setter(into), default)]
+    pub cell_format: Option<CellFormat>,
+    #[builder(default, setter(into))]
+    pub return_fields_by_field_id: Option<bool>,
+}
+
 impl Airtable {
     pub async fn list_records<T>(
         &self,
         base_id: &str,
         table_id: &str,
-        query: ListRecordsQuery,
+        query: Option<&ListRecordsQuery>,
     ) -> Result<ListRecordsResponse<T>>
     where
         T: for<'de> Deserialize<'de>,
     {
         let url = format!(
             "https://api.airtable.com/v0/{base_id}/{table_id}/{query}",
-            base_id = base_id,
-            table_id = table_id,
-            query = query.to_query_string()
+            query = query.map(|q| q.to_query_string()).unwrap_or_default()
         );
 
         let data = self.http.get(&url).send().await?.json::<ListRecordsResponse<T>>().await?;
 
         Ok(data)
+    }
+
+    pub async fn get_record<T>(
+        &self,
+        base_id: &str,
+        table_id: &str,
+        record_id: &str,
+        query: Option<&GetRecordQuery>,
+    ) -> Result<GetRecordResponse<T>>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let url = format!(
+            "https://api.airtable.com/v0/{base_id}/{table_id}/{record_id}/{query}",
+            query = query.map(|q| q.to_query_string()).unwrap_or_default()
+        );
+
+        let data = self.http.get(&url).send().await?.json::<GetRecordResponse<T>>().await?;
+
+        Ok(data)
+    }
+
+    pub async fn update_record<T>(
+        &self,
+        base_id: &str,
+        table_id: &str,
+        record_id: &str,
+        data: T,
+    ) -> Result<()>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        Ok(())
     }
 }

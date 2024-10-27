@@ -29,6 +29,7 @@ language plpgsql;
 
 -- Allowed age ranges for volunteers (from Airtable)
 create type age_range as enum(
+  '17_and_under',
   '18-24',
   '25-29',
   '30-34',

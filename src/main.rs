@@ -32,6 +32,8 @@
 //  @author Anish Sinha <anish@developforgood.org>
 //  ────────────────────────────────────────────────────────────────────────────────────────────────────
 
+#![forbid(unsafe_code)]
+
 mod app;
 mod cli;
 mod services;
@@ -44,12 +46,12 @@ use crate::cli::Args;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    match dotenvy::dotenv() {
-        Ok(_) => println!("loaded .env file"),
-        Err(_) => println!("no .env file found"),
-    };
-
     tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+
+    match dotenvy::dotenv() {
+        Ok(_) => log::info!("loaded .env file"),
+        Err(_) => log::info!("no .env file found"),
+    };
 
     let args = Args::parse();
 

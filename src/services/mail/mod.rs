@@ -66,11 +66,11 @@ impl TryFrom<OnboardingEmailParams> for Mail {
             .build()?;
 
         let from = AddressBuilder::default()
-            .email("pantheon@developforgood.org")
-            .name("Pantheon".to_owned())
+            .email("onboarding@developforgood.org")
+            .name("Develop for Good".to_owned())
             .build()?;
 
-        let subject = "Welcome to Pantheon!".to_owned();
+        let subject = "Develop for Good: Onboarding instructions".to_owned();
         let mut context = Context::new();
 
         context.insert("name", &value.first_name);

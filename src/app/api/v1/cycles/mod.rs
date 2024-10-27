@@ -27,16 +27,16 @@ pub struct CyclesApi;
 ///
 /// * `ctx`: The application context
 pub async fn build(ctx: Arc<Services>) -> Router<()> {
-    let guard1 = make_rbac(vec!["read:cycles".to_owned()]).await;
-    let guard2 = make_rbac(vec!["delete:cycles".to_owned()]).await;
+    let read_cycles_guard = make_rbac(vec!["read:cycles".to_owned()]).await;
+    let write_cycles_guard = make_rbac(vec!["delete:cycles".to_owned()]).await;
 
     let fetch_cycles = routing::get(controllers::fetch_cycles);
     let delete_cycle = routing::delete(controllers::delete_cycle);
 
     Router::new()
         .route("/", fetch_cycles)
-        .route_layer(from_fn_with_state(ctx.clone(), guard1))
+        .route_layer(from_fn_with_state(ctx.clone(), read_cycles_guard))
         .route("/:id", delete_cycle)
-        .route_layer(from_fn_with_state(ctx.clone(), guard2))
+        .route_layer(from_fn_with_state(ctx.clone(), write_cycles_guard))
         .with_state(ctx.clone())
 }
