@@ -9,6 +9,7 @@ RUN cargo zigbuild --release --target x86_64-unknown-linux-musl
 
 FROM scratch AS runtime
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/scipio /usr/local/bin/
+COPY --from=builder /app/templates /templates
 # COPY --from=builder /app/target/aarch64-unknown-linux-musl/release/scipio /usr/local/bin/
 
 CMD ["/usr/local/bin/scipio"]

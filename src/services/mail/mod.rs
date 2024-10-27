@@ -5,6 +5,8 @@ pub mod sendgrid;
 #[cfg(test)]
 mod tests;
 
+use std::env;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use derive_builder::Builder;
@@ -17,9 +19,12 @@ use tera::{Context, Tera};
 use super::Service;
 
 lazy_static! {
+
     /// The Tera instance for rendering email templates.
     static ref TEMPLATES: Tera = {
-        match Tera::new("templates/**/*") {
+        let templates_dir = env::var("MAIL_TEMPLATES_DIR").unwrap_or_else(|_| "templates".to_owned());
+        // log::info!("Loading templates from {}", templates_dir);
+        match Tera::new(&format!("{templates_dir}/**/*")) {
             Ok(t) => t,
             Err(e) => {
                 println!("Parsing error(s): {}", e);
