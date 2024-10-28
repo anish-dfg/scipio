@@ -1,32 +1,29 @@
 {% extends "email/base.html" %}
 <!---->
 {% block content %}
-<h2 class="welcome">Greetings {{ name }},</h2>
+<h2 class="welcome">Dear {{ name }},</h2>
 <div class=".container">
   <p>
-    Welcome to Develop for Good! To get started with this batch, you will need to
-    activate your Develop for Good email at your earliest convenience.
+    We’re excited to welcome you to Develop for Good at our Volunteer Orientation shortly!
+    In the meantime, due to an unforeseen technical issue with our subdomain, we are re-issuing
+    new Develop for Good login credentials for you to activate:
   </p>
   <p>
     Your new Develop for Good email is: {{ email }}<br />Your temporary password
     is: {{ temporaryPassword }}
   </p>
   <div>
-Please sign in with your credentials above here: <a href="https://accounts.google.com">Google Workspace Login</a>. Once you log in, you will be prompted to change your password.
-    Once you log in, you will be prompted to change your password.
+Please sign in with your credentials above here: <a href="https://accounts.google.com">Google Workspace Login</a>.
+    Once you log in, you will be prompted to change your password. Your previous
+    login credentials (at the @volunteer.developforgood.org subdomain) will be deactivated shortly.
   </div>
   <p>
-     We will be sending you an invitation to join our Slack workspace through your
-     Develop for Good email shortly. Once you log into our organization Slack, you
-     will be able to introduce yourself to your teammates and nonprofit client on
-     your project-specific channel. All project and org-wide communications will be
-     hosted on Slack, including reminders and recaps about our upcoming sessions
-     this week for orientation and onboarding.
+Later this evening, we’ll send an invitation to join our Slack workspace through your new Develop for
+    Good email. Please activate your email and accept the Slack invite as soon as it arrives to ensure
+    a smooth onboarding experience. If you have any questions, feel free to reach out to onboarding@developforgood.org.
   </p>
   <p>
-     We request that you activate your email and accept our Slack invite as soon as
-     it lands in your inbox to avoid delays with onboarding. If you have any
-     questions, please don't hesitate to email onboarding@developforgood.org for help.
+Thank you for your understanding! We look forward to seeing you at Orientation!
   </p>
   <p>
      Welcome aboard!

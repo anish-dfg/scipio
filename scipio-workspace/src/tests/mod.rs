@@ -16,7 +16,7 @@ async fn test_create_and_delete_user(service_account: ServiceAccount) -> Result<
     let random_suffix =
         rand::thread_rng().sample_iter(&Alphanumeric).take(6).map(char::from).collect::<String>();
 
-    let email = format!("test-anish-{random_suffix}@volunteer.developforgood.org");
+    let email = format!("test-anish-{random_suffix}@developforgood.org");
 
     let data = CreateWorkspaceUserBuilder::default()
         .primary_email(email)

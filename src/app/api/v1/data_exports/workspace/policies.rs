@@ -35,7 +35,7 @@ impl EmailPolicy {
 
         let mut cleaned = base.chars().filter(|c| c.is_alphanumeric()).collect::<String>();
 
-        cleaned.push_str("@volunteer.developforgood.org");
+        cleaned.push_str("@developforgood.org");
         cleaned
     }
 }

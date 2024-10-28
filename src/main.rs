@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
     };
 
     let templates_dir = env::var("MAIL_TEMPLATES_DIR").unwrap_or_else(|_| "templates".to_owned());
-    log::info!("Loading templates from {}", templates_dir);
+     log::info!("Loading templates from {}", templates_dir);
 
     let args = Args::parse();
     log::info!(
