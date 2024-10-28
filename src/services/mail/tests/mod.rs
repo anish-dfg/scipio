@@ -33,10 +33,10 @@ pub fn test_render_template() {
 #[tokio::test]
 pub async fn test_send_onboarding_email(sendgrid: Sendgrid) -> Result<()> {
     let params = OnboardingEmailParams {
-        first_name: "Anish".to_owned(),
-        last_name: "Sinha".to_owned(),
-        email: "anishsinha0128@gmail.com".to_owned(),
-        workspace_email: "anish@developforgood.org".to_owned(),
+        first_name: "Mary".to_owned(),
+        last_name: "Zhu".to_owned(),
+        email: "mary@developforgood.org".to_owned(),
+        workspace_email: "maryzhu2@developforgood.org".to_owned(),
         temporary_password: "password123".to_owned(),
         send_at: None,
     };
