@@ -1,9 +1,10 @@
 use rstest::rstest;
-
+use tracing_test::traced_test;
 use super::fixtures::{context, AsyncTestContext};
 
 #[cfg(feature = "integration")]
 #[rstest]
+#[traced_test]
 #[tokio::test]
 pub async fn test_list_bases(context: AsyncTestContext) {
     let bases_response = context.airtable.list_bases(None).await.unwrap();

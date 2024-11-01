@@ -1,5 +1,5 @@
 use std::env;
-
+use tracing_test::traced_test;
 use anyhow::Result;
 use rstest::rstest;
 
@@ -9,6 +9,7 @@ use crate::base_data::records::{GetRecordQueryBuilder, ListRecordsQueryBuilder};
 
 #[cfg(feature = "integration")]
 #[rstest]
+#[traced_test]
 #[tokio::test]
 pub async fn test_list_records(context: AsyncTestContext) -> Result<()> {
     let mut cleanup = context.cleanup.lock().await;
@@ -37,6 +38,7 @@ pub async fn test_list_records(context: AsyncTestContext) -> Result<()> {
 
 #[cfg(feature = "integration")]
 #[rstest]
+#[traced_test]
 #[tokio::test]
 pub async fn test_get_record(context: AsyncTestContext) -> Result<()> {
     use anyhow::bail;
@@ -44,8 +46,8 @@ pub async fn test_get_record(context: AsyncTestContext) -> Result<()> {
     let mut cleanup = context.cleanup.lock().await;
     cleanup.push(Box::new(|| {
         Box::pin(async move {
-            log::info!("Cleaning up test_get_record");
-            bail!("test_get_record failed");
+            tracing::info!("Cleaning up test_get_record");
+            // bail!("test_get_record failed");
             Ok(())
         })
     }));
@@ -67,6 +69,7 @@ pub async fn test_get_record(context: AsyncTestContext) -> Result<()> {
 
 #[cfg(feature = "integration")]
 #[rstest]
+#[traced_test]
 #[tokio::test]
 pub async fn test_update_record(context: AsyncTestContext) -> Result<()> {
     let mut cleanup = context.cleanup.lock().await;
@@ -74,7 +77,7 @@ pub async fn test_update_record(context: AsyncTestContext) -> Result<()> {
     cleanup.push(Box::new(move || {
         let airtable = airtable.clone();
         Box::pin(async move {
-            log::info!("Cleaning up test_get_record");
+            tracing::info!("Cleaning up test_get_record");
             Ok(())
         })
     }));
